@@ -18,10 +18,14 @@ import { AnalysisStage } from './components/AnalysisStage'
 import { TailorStage } from './components/TailorStage'
 import { DoneStage } from './components/DoneStage'
 import { InterviewStage } from './components/InterviewStage'
+import { useLanguage } from './i18n/LanguageContext'
+import type { Language } from './i18n/translations'
 
 type InterviewTurn = { question: string; answer: string | null }
 
 function App() {
+  const { t, lang, setLang } = useLanguage()
+
   const [mode, setMode] = useState<AppMode | null>(null)
   const [stage, setStage] = useState<Stage>('mode')
   const [isLoading, setIsLoading] = useState(false)
@@ -35,12 +39,25 @@ function App() {
   const [interviewState, setInterviewState] = useState<InterviewResponse | null>(null)
   const [interviewHistory, setInterviewHistory] = useState<InterviewTurn[]>([])
 
+  function resetToMenu() {
+    // Reset complet -- sense memoria entre sessions per disseny (v0.1),
+    // aixi que tornar al menu vol dir començar de zero conscientment.
+    setMode(null)
+    setStage('mode')
+    setCvText('')
+    setJdText('')
+    setAnalysis(null)
+    setTailorState(null)
+    setInterviewState(null)
+    setInterviewHistory([])
+    setError(null)
+  }
+
   function handleModeSelect(selected: AppMode) {
     setMode(selected)
     setStage('upload')
   }
 
-  // Camí "apply": Upload -> Analysis -> Tailor -> Done
   async function handleAnalyze(cv: string, jd: string) {
     setIsLoading(true)
     setError(null)
@@ -51,7 +68,7 @@ function App() {
       setAnalysis(result)
       setStage('analysis')
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No s'ha pogut connectar amb el servidor.")
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
       setIsLoading(false)
     }
@@ -65,7 +82,7 @@ function App() {
       setTailorState(result)
       setStage('tailor')
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No s'ha pogut connectar amb el servidor.")
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
       setIsLoading(false)
     }
@@ -80,15 +97,12 @@ function App() {
       setTailorState(result)
       if (result.status === 'complete') setStage('done')
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No s'ha pogut connectar amb el servidor.")
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Camí "interview_practice": Upload -> Interview directament
-  // (i tambe accessible des de DoneStage, per si l'usuari fa el camí "apply"
-  // primer i decideix mes endavant que li han trucat per l'entrevista)
   function goToInterview() {
     setStage('interview')
   }
@@ -101,7 +115,7 @@ function App() {
       setInterviewState(result)
       setInterviewHistory([{ question: result.question, answer: null }])
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No s'ha pogut connectar amb el servidor.")
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
       setIsLoading(false)
     }
@@ -121,7 +135,7 @@ function App() {
         setInterviewHistory((prev) => [...prev, { question: result.question, answer: null }])
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "No s'ha pogut connectar amb el servidor.")
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
       setIsLoading(false)
     }
@@ -129,10 +143,36 @@ function App() {
 
   return (
     <div className="min-h-screen bg-ink px-6 py-10">
-      <div className="mx-auto mb-10 flex max-w-3xl items-center justify-between">
-        <span className="font-display text-lg font-semibold text-paper">CareerPilot AI</span>
-        <StageStepper current={stage} mode={mode} />
+      <div className="mx-auto mb-4 flex max-w-3xl items-center justify-between">
+        <span className="font-display text-lg font-semibold text-paper">{t.appName}</span>
+        <div className="flex items-center gap-4">
+          <StageStepper current={stage} mode={mode} />
+          <div className="flex overflow-hidden rounded-full border border-panel-border font-mono text-[10px] uppercase tracking-wider">
+            {(['en', 'es'] as Language[]).map((code) => (
+              <button
+                key={code}
+                onClick={() => setLang(code)}
+                className={`px-2.5 py-1 transition-colors ${
+                  lang === code ? 'bg-accent text-ink' : 'text-muted hover:text-paper'
+                }`}
+              >
+                {code.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {stage !== 'mode' && (
+        <div className="mx-auto mb-6 max-w-3xl">
+          <button
+            onClick={resetToMenu}
+            className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-accent"
+          >
+            {t.backToMenu}
+          </button>
+        </div>
+      )}
 
       {stage === 'mode' && <ModeSelect onSelect={handleModeSelect} />}
 
@@ -149,6 +189,7 @@ function App() {
           }}
           isLoading={false}
           error={error}
+          submitLabel={t.upload.submitInterview}
         />
       )}
 

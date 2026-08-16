@@ -1,16 +1,5 @@
+import { useLanguage } from '../i18n/LanguageContext'
 import type { AnalyzeResponse } from '../api'
-
-const STATUS_LABEL: Record<string, string> = {
-  match: 'Coberta',
-  partial: 'Parcial',
-  gap: 'Buit',
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  match: 'text-match border-match/40 bg-match/10',
-  partial: 'text-partial border-partial/40 bg-partial/10',
-  gap: 'text-gap border-gap/40 bg-gap/10',
-}
 
 export function AnalysisStage({
   analysis,
@@ -19,21 +8,33 @@ export function AnalysisStage({
   analysis: AnalyzeResponse
   onContinue: () => void
 }) {
+  const { t } = useLanguage()
+
+  const STATUS_LABEL: Record<string, string> = {
+    match: t.analysis.statusMatch,
+    partial: t.analysis.statusPartial,
+    gap: t.analysis.statusGap,
+  }
+  const STATUS_COLOR: Record<string, string> = {
+    match: 'text-match border-match/40 bg-match/10',
+    partial: 'text-partial border-partial/40 bg-partial/10',
+    gap: 'text-gap border-gap/40 bg-gap/10',
+  }
+
   const sorted = [...analysis.competencies].sort((a, b) => a.priority - b.priority)
 
   return (
     <div className="mx-auto max-w-3xl">
       <div className="flex items-start justify-between gap-8">
         <div>
-          <h1 className="font-display text-4xl font-semibold text-paper">Veredicte</h1>
+          <h1 className="font-display text-4xl font-semibold text-paper">{t.analysis.heading}</h1>
           <p className="mt-3 max-w-md text-muted">{analysis.company_profile}</p>
         </div>
 
-        {/* Segell -- element signatura de la pagina */}
         <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border-2 border-accent font-display text-3xl font-semibold text-accent">
           {Math.round(analysis.fit_score)}
           <span className="font-mono text-[10px] font-normal tracking-wider text-accent/70">
-            FIT SCORE
+            {t.analysis.fitScoreLabel}
           </span>
         </div>
       </div>
@@ -61,7 +62,7 @@ export function AnalysisStage({
         onClick={onContinue}
         className="mt-8 rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
       >
-        Retoca el CV →
+        {t.analysis.continue}
       </button>
     </div>
   )

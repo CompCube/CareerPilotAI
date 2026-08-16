@@ -1,16 +1,32 @@
+import { useLanguage } from '../i18n/LanguageContext'
+
 export type Stage = 'mode' | 'upload' | 'analysis' | 'tailor' | 'done' | 'interview'
 
-const APPLY_STAGES: { key: Stage; label: string }[] = [
-  { key: 'upload', label: 'Expedient' },
-  { key: 'analysis', label: 'Anàlisi' },
-  { key: 'tailor', label: 'Retoc' },
-  { key: 'done', label: 'Llest' },
-]
+const APPLY_KEYS: Stage[] = ['upload', 'analysis', 'tailor', 'done']
+const INTERVIEW_KEYS: Stage[] = ['upload', 'interview']
 
-const INTERVIEW_STAGES: { key: Stage; label: string }[] = [
-  { key: 'upload', label: 'Expedient' },
-  { key: 'interview', label: 'Entrevista' },
-]
+const STAGE_LABEL_KEY: Record<Stage, string> = {
+  mode: '',
+  upload: 'Case file',
+  analysis: 'Analysis',
+  tailor: 'Tailor',
+  done: 'Ready',
+  interview: 'Interview',
+}
+
+// Etiquetes curtes -- no calen totes al diccionari complet de traduccions,
+// nomes es fan servir aqui i son prou petites per mantenir-les simples.
+const LABELS: Record<'en' | 'es', Record<Stage, string>> = {
+  en: STAGE_LABEL_KEY,
+  es: {
+    mode: '',
+    upload: 'Expediente',
+    analysis: 'Análisis',
+    tailor: 'Retoque',
+    done: 'Listo',
+    interview: 'Entrevista',
+  },
+}
 
 export function StageStepper({
   current,
@@ -19,26 +35,28 @@ export function StageStepper({
   current: Stage
   mode: 'apply' | 'interview_practice' | null
 }) {
+  const { lang } = useLanguage()
   if (!mode) return null
 
-  const stages = mode === 'apply' ? APPLY_STAGES : INTERVIEW_STAGES
-  const currentIndex = stages.findIndex((s) => s.key === current)
+  const keys = mode === 'apply' ? APPLY_KEYS : INTERVIEW_KEYS
+  const labels = LABELS[lang]
+  const currentIndex = keys.findIndex((k) => k === current)
 
   return (
     <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider">
-      {stages.map((stage, index) => {
+      {keys.map((key, index) => {
         const isDone = index < currentIndex
         const isCurrent = index === currentIndex
         return (
-          <div key={stage.key} className="flex items-center gap-2">
+          <div key={key} className="flex items-center gap-2">
             <span
               className={
                 isCurrent ? 'text-accent' : isDone ? 'text-muted' : 'text-panel-border'
               }
             >
-              {String(index + 1).padStart(2, '0')} {stage.label}
+              {String(index + 1).padStart(2, '0')} {labels[key]}
             </span>
-            {index < stages.length - 1 && <span className="text-panel-border">/</span>}
+            {index < keys.length - 1 && <span className="text-panel-border">/</span>}
           </div>
         )
       })}
