@@ -48,8 +48,22 @@ function PdfUploadButton({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={isExtracting}
-        className="font-mono text-[10px] uppercase tracking-wider text-accent underline decoration-dotted underline-offset-2 hover:text-paper disabled:opacity-50"
+        className="flex items-center gap-1.5 rounded-full border border-accent/50 bg-accent/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-accent transition-colors hover:border-accent hover:bg-accent/20 disabled:opacity-50"
       >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
         {isExtracting ? t.upload.extracting : t.upload.orUploadPdf}
       </button>
     </>
