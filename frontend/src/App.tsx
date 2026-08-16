@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   analyze,
   continueInterview,
@@ -53,7 +53,20 @@ function App() {
     setError(null)
   }
 
+  // El boto "enrere" del navegador fa el mateix que el logo: torna sempre
+  // al menu principal (no pas-a-pas per etapa). Nomes cal UN pushState en
+  // sortir del menu -- mentre es navega dins de l'app no n'afegim mes,
+  // aixi que "enrere" sempre aterra en aquest unic punt marcat.
+  useEffect(() => {
+    function handlePopState() {
+      resetToMenu()
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   function handleModeSelect(selected: AppMode) {
+    window.history.pushState({ inApp: true }, '')
     setMode(selected)
     setStage('upload')
   }
@@ -144,7 +157,12 @@ function App() {
   return (
     <div className="min-h-screen bg-ink px-6 py-10">
       <div className="mx-auto mb-4 flex max-w-3xl items-center justify-between">
-        <span className="font-display text-lg font-semibold text-paper">{t.appName}</span>
+        <button
+          onClick={resetToMenu}
+          className="font-display text-lg font-semibold text-paper transition-opacity hover:opacity-80"
+        >
+          {t.appName}
+        </button>
         <div className="flex items-center gap-4">
           <StageStepper current={stage} mode={mode} />
           <div className="flex overflow-hidden rounded-full border border-panel-border font-mono text-[10px] uppercase tracking-wider">
