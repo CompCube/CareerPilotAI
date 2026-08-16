@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* --- Paleta: dossier / expedient revisat --- */
+  --color-ink: #14171f;        /* fons principal */
+  --color-panel: #1e222d;      /* targetes / superficies */
+  --color-panel-border: #2c313f;
+  --color-paper: #edeae3;      /* text principal, calid, no blanc pur */
+  --color-muted: #9195a3;      /* text secundari */
+  --color-accent: #c98a3b;     /* segell ambre -- nomes per a moments clau */
+  --color-accent-soft: #8a6231;
+  --color-match: #6fa98a;      /* competencia coberta */
+  --color-partial: #c9a23b;    /* competencia parcial */
+  --color-gap: #c9645a;        /* competencia amb buit */
+
+  --font-display: 'Fraunces', serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+}
