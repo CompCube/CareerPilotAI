@@ -64,6 +64,24 @@ export type InterviewResponse = {
 
 // --- Crides ---
 
+export async function extractPdfText(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(`${API_BASE_URL}/extract-pdf`, {
+    method: 'POST',
+    body: formData, // NO Content-Type manual -- el navegador el posa amb el boundary correcte
+  })
+
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({ detail: 'Unknown error' }))
+    throw new ApiError(detail.detail || `Error ${response.status}`, response.status)
+  }
+
+  const data: { text: string } = await response.json()
+  return data.text
+}
+
 export function analyze(cvText: string, jdText: string): Promise<AnalyzeResponse> {
   return post('/analyze', { cv_text: cvText, jd_text: jdText })
 }

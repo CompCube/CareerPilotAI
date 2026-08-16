@@ -6,7 +6,7 @@ corresponent, retorna la resposta). Cap logica de negoci aqui --
 aixo viu a app/agents/.
 """
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
 from app.agents.analyzer_agent import run_analyzer
 from app.agents.interview_agent import InterviewFinishedError, continue_interview, start_interview
@@ -18,11 +18,14 @@ from app.models.schemas import (
     AnalyzeResponse,
     InterviewRequest,
     InterviewResponse,
+    PDFExtractResponse,
     TailorRequest,
     TailorResponse,
 )
 from app.services.llm_service import LLMServiceError
 from app.services.structured_output import StructuredOutputError
+from app.utils.pdf_extraction import PDFExtractionError, extract_text_from_pdf
+from app.utils.validation import FileValidationError, validate_pdf_upload
 
 router = APIRouter()
 settings = get_settings()
@@ -34,6 +37,27 @@ def health_check() -> dict:
     fan servir per saber si el servei esta viu). Sense rate limit -- els
     healthchecks del hosting el criden sovint."""
     return {"status": "ok", "service": "careerpilot-ai-backend"}
+
+
+@router.post("/extract-pdf", response_model=PDFExtractResponse)
+@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
+async def extract_pdf(request: Request, file: UploadFile = File(...)) -> PDFExtractResponse:
+    """
+    Rep un PDF, el valida per contingut real (no per extensio), i n'extreu
+    el text. No crida cap LLM -- nomes parsing local, per aixo es mes barat
+    i rapid que la resta d'endpoints.
+    """
+    try:
+        content = await validate_pdf_upload(file)
+    except FileValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    try:
+        text = extract_text_from_pdf(content)
+    except PDFExtractionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    return PDFExtractResponse(text=text)
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)

@@ -22,6 +22,8 @@ export interface Translations {
     submitIdle: string
     submitLoading: string
     submitInterview: string
+    orUploadPdf: string
+    extracting: string
   }
   analysis: {
     heading: string
@@ -92,6 +94,8 @@ export const translations: Record<Language, Translations> = {
       submitIdle: 'Analyze fit',
       submitLoading: 'Analyzing…',
       submitInterview: 'Start interview',
+      orUploadPdf: 'or upload PDF',
+      extracting: 'Extracting…',
     },
     analysis: {
       heading: 'Verdict',
@@ -160,6 +164,8 @@ export const translations: Record<Language, Translations> = {
       submitIdle: 'Analiza el encaje',
       submitLoading: 'Analizando…',
       submitInterview: 'Empezar entrevista',
+      orUploadPdf: 'o sube un PDF',
+      extracting: 'Extrayendo…',
     },
     analysis: {
       heading: 'Veredicto',
