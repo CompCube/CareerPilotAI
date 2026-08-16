@@ -4,11 +4,11 @@ import type { TailorResponse } from '../api'
 type Props = {
   tailorState: TailorResponse
   onAnswer: (message: string) => void
-  onContinueToInterview: () => void
+  onComplete: () => void
   isLoading: boolean
 }
 
-export function TailorStage({ tailorState, onAnswer, onContinueToInterview, isLoading }: Props) {
+export function TailorStage({ tailorState, onAnswer, onComplete, isLoading }: Props) {
   const [reply, setReply] = useState('')
 
   return (
@@ -66,10 +66,10 @@ export function TailorStage({ tailorState, onAnswer, onContinueToInterview, isLo
         </div>
       ) : (
         <button
-          onClick={onContinueToInterview}
+          onClick={onComplete}
           className="mt-6 rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
         >
-          Comença l'entrevista →
+          Finalitza la candidatura →
         </button>
       )}
     </div>
