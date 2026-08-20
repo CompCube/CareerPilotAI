@@ -14,8 +14,8 @@ from app.services.structured_output import call_llm_structured
 
 
 def _summarize_analysis(analysis: AnalyzeResponse | None) -> str | None:
-    """Redueix l'AnalyzeResponse complet a un resum curt -- no cal enviar
-    tot el JSON de l'Analyzer, nomes el que ajuda a prioritzar el tailor."""
+    """Reduces the full AnalyzeResponse to a short summary -- no need to send
+    the Analyzer's entire JSON, just what helps prioritize the tailoring."""
     if analysis is None:
         return None
     top_gaps = [c.competency for c in analysis.competencies if c.match_status == "gap"]
@@ -23,10 +23,10 @@ def _summarize_analysis(analysis: AnalyzeResponse | None) -> str | None:
         c.competency for c in sorted(analysis.competencies, key=lambda c: c.priority)[:5]
     ]
     return (
-        f"Perfil que busca l'empresa: {analysis.company_profile}\n"
-        f"Competencies prioritaries: {', '.join(top_priorities)}\n"
-        f"Gaps detectats (no forçar-los si no hi ha evidencia real): "
-        f"{', '.join(top_gaps) if top_gaps else 'cap'}"
+        f"What the company is looking for: {analysis.company_profile}\n"
+        f"Priority competencies: {', '.join(top_priorities)}\n"
+        f"Detected gaps (don't force these if there's no real evidence): "
+        f"{', '.join(top_gaps) if top_gaps else 'none'}"
     )
 
 
