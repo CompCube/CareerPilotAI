@@ -106,7 +106,7 @@ def start_tailor_session(cv_text: str, jd_text: str, analysis: AnalyzeResponse) 
         messages=[{"role": "user", "content": build_extract_message(cv_text, jd_text)}],
         response_model=TailorExtractOutput,
         prompt_name="tailor.extract",
-        max_tokens=1500,
+        max_tokens=2500,
     )
     state.top_keywords = extract_result.top_keywords
     state.key_skills = extract_result.key_skills
@@ -207,7 +207,7 @@ def _ask_section(session_id: str, state: _TailorState, extra_context: str | None
         messages=[{"role": "user", "content": user_content}],
         response_model=TailorSectionOutput,
         prompt_name=f"tailor.assemble.{section_name}",
-        max_tokens=800,
+        max_tokens=1200,
     )
 
     if result.status == "needs_info":
