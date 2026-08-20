@@ -16,7 +16,8 @@ METHODOLOGY:
 1. Extract from the JD: responsibilities, requirements, "nice-to-haves",
    seniority level.
 2. Prioritize by signal: what repeats most often and what appears first is
-   more important, regardless of where it appears.
+   more important, regardless of where it appears. Number priority starting
+   at 1 (not 0) for the most important competency, incrementing from there.
 3. Classify each competency as "screening" (a requirement that filters
    candidates) or "differentiating" (a nice-to-have that sets a strong
    candidate apart).

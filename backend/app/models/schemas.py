@@ -29,7 +29,7 @@ class AnalyzeRequest(BaseModel):
 
 class CompetencyMatch(BaseModel):
     competency: str
-    priority: int = Field(..., ge=1, description="1 = mes important")
+    priority: int = Field(..., ge=0, description="1 = mes important (0 tambe acceptat per tolerancia)")
     type: Literal["screening", "differentiating"]
     match_status: Literal["match", "partial", "gap"]
     evidence: str = Field(
@@ -45,7 +45,9 @@ class AnalyzeResponse(BaseModel):
         ..., description="Who they're really hiring, 3-5 sentences"
     )
     company_profile: str = Field(..., description="Que busca l'empresa, en 2-3 frases")
-    competencies: list[CompetencyMatch]
+    competencies: list[CompetencyMatch] = Field(
+        ..., min_length=1, description="Mai buit -- una JD real sempre te alguna competencia"
+    )
     fit_score: float = Field(..., ge=0, le=100)
 
 

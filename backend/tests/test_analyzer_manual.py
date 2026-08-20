@@ -57,8 +57,57 @@ def test_invalid_json_raises_clean_error():
     print("OK  test_invalid_json_raises_clean_error")
 
 
+PRIORITY_ZERO_RESPONSE = """{
+  "role_summary": "A role building things.",
+  "ideal_candidate_profile": "Someone who builds things well.",
+  "company_profile": "Empresa que busca algu.",
+  "competencies": [
+    {"competency": "Python", "priority": 0, "type": "screening", "match_status": "match", "evidence": "5 anys amb Python"}
+  ],
+  "fit_score": 72
+}"""
+
+EMPTY_COMPETENCIES_RESPONSE = """{
+  "role_summary": "Unable to complete analysis.",
+  "ideal_candidate_profile": "Unable to complete analysis.",
+  "company_profile": "Unable to complete analysis.",
+  "competencies": [],
+  "fit_score": 0
+}"""
+
+
+def test_priority_zero_is_accepted():
+    """Real bug caught in prod logs: the model sometimes numbers priority
+    starting at 0. Schema now tolerates it instead of hard-failing."""
+    with patch("app.services.structured_output.call_llm", return_value=PRIORITY_ZERO_RESPONSE):
+        result = run_analyzer(cv_text="CV de prova" * 3, jd_text="JD de prova" * 3)
+        assert result.competencies[0].priority == 0
+    print("OK  test_priority_zero_is_accepted")
+
+
+def test_empty_competencies_triggers_retry_then_fails_clean():
+    """Real bug caught in prod: the model can return schema-valid but
+    semantically-empty JSON ('Unable to complete analysis.' as the text,
+    competencies=[]). min_length=1 on competencies forces this to be
+    treated as an invalid format -- retried once, then a clean error
+    instead of silently showing an empty result to the user."""
+    with patch(
+        "app.services.structured_output.call_llm",
+        return_value=EMPTY_COMPETENCIES_RESPONSE,
+    ) as mock_call:
+        try:
+            run_analyzer(cv_text="CV de prova" * 3, jd_text="JD de prova" * 3)
+            raise AssertionError("Hauria d'haver llançat StructuredOutputError")
+        except StructuredOutputError:
+            pass
+        assert mock_call.call_count == 2, "Hauria de reintentar exactament un cop"
+    print("OK  test_empty_competencies_triggers_retry_then_fails_clean")
+
+
 if __name__ == "__main__":
     test_happy_path()
     test_fenced_json()
     test_invalid_json_raises_clean_error()
+    test_priority_zero_is_accepted()
+    test_empty_competencies_triggers_retry_then_fails_clean()
     print("\nTots els tests de l'Analyzer han passat.")
