@@ -165,7 +165,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-ink px-6 py-10">
-      <div className="mx-auto mb-4 flex max-w-3xl items-center justify-between">
+      <div className="mx-auto mb-4 flex max-w-5xl items-center justify-between">
         <button
           onClick={resetToMenu}
           className="font-display text-lg font-semibold text-paper transition-opacity hover:opacity-80"
@@ -191,7 +191,7 @@ function App() {
       </div>
 
       {stage !== 'mode' && (
-        <div className="mx-auto mb-6 max-w-3xl">
+        <div className="mx-auto mb-6 max-w-5xl">
           <button
             onClick={resetToMenu}
             className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-accent"
