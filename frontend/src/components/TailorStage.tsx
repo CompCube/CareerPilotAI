@@ -1,15 +1,26 @@
 import { useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
-import type { TailorResponse } from '../api'
+import type { TailoredBullet } from '../api'
+
+export type TailorTurn = { agentMessage: string; userReply: string | null }
 
 type Props = {
-  tailorState: TailorResponse
+  history: TailorTurn[]
+  tailoredBullets: TailoredBullet[]
+  status: 'needs_info' | 'complete'
   onAnswer: (message: string) => void
   onComplete: () => void
   isLoading: boolean
 }
 
-export function TailorStage({ tailorState, onAnswer, onComplete, isLoading }: Props) {
+export function TailorStage({
+  history,
+  tailoredBullets,
+  status,
+  onAnswer,
+  onComplete,
+  isLoading,
+}: Props) {
   const { t } = useLanguage()
   const [reply, setReply] = useState('')
 
@@ -17,33 +28,46 @@ export function TailorStage({ tailorState, onAnswer, onComplete, isLoading }: Pr
     <div className="mx-auto max-w-2xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.tailor.heading}</h1>
 
-      {tailorState.tailored_bullets.length > 0 && (
-        <div className="mt-8 space-y-4">
-          {tailorState.tailored_bullets.map((b, i) => (
-            <div key={i} className="rounded-md border border-panel-border bg-panel p-4">
+      {/* Historial tipus xat -- mateix patró que l'Interview */}
+      <div className="mt-6 space-y-4">
+        {history.map((turn, i) => (
+          <div key={i}>
+            <div className="rounded-lg border border-panel-border bg-panel px-4 py-3.5">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+                {t.tailor.agentAsks}
+              </p>
+              <p className="mt-1.5 text-base leading-relaxed text-paper">{turn.agentMessage}</p>
+            </div>
+            {turn.userReply && (
+              <div className="ml-6 mt-2 rounded-lg border border-panel-border bg-ink px-4 py-3.5">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-muted">You</p>
+                <p className="mt-1.5 text-base leading-relaxed text-paper">{turn.userReply}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {tailoredBullets.length > 0 && (
+        <div className="mt-6 space-y-3">
+          {tailoredBullets.map((b, i) => (
+            <div key={i} className="rounded-lg border border-panel-border bg-panel p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-muted">
                 {t.tailor.before}
               </p>
-              <p className="mt-1 text-sm text-muted line-through decoration-muted/40">
+              <p className="mt-1 text-sm leading-relaxed text-muted line-through decoration-muted/40">
                 {b.original}
               </p>
               <p className="mt-3 font-mono text-[10px] uppercase tracking-wider text-match">
                 {t.tailor.after}
               </p>
-              <p className="mt-1 text-sm text-paper">{b.rewritten}</p>
+              <p className="mt-1 text-base leading-relaxed text-paper">{b.rewritten}</p>
             </div>
           ))}
         </div>
       )}
 
-      <div className="mt-8 rounded-md border border-accent/40 bg-accent/10 p-4">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
-          {tailorState.status === 'needs_info' ? t.tailor.agentAsks : t.tailor.summary}
-        </p>
-        <p className="mt-2 text-sm text-paper">{tailorState.agent_message}</p>
-      </div>
-
-      {tailorState.status === 'needs_info' ? (
+      {status === 'needs_info' ? (
         <div className="mt-4 flex gap-2">
           <input
             value={reply}
@@ -55,7 +79,7 @@ export function TailorStage({ tailorState, onAnswer, onComplete, isLoading }: Pr
               }
             }}
             placeholder={t.tailor.answerPlaceholder}
-            className="flex-1 rounded-md border border-panel-border bg-panel px-4 py-3 text-sm text-paper placeholder:text-muted/60 focus:border-accent focus:outline-none"
+            className="flex-1 rounded-md border border-panel-border bg-panel px-4 py-3 text-base text-paper placeholder:text-muted/60 focus:border-accent focus:outline-none"
           />
           <button
             onClick={() => {

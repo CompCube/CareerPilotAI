@@ -15,7 +15,7 @@ import { StageStepper, type Stage } from './components/StageStepper'
 import { ModeSelect, type AppMode } from './components/ModeSelect'
 import { UploadStage } from './components/UploadStage'
 import { AnalysisStage } from './components/AnalysisStage'
-import { TailorStage } from './components/TailorStage'
+import { TailorStage, type TailorTurn } from './components/TailorStage'
 import { DoneStage } from './components/DoneStage'
 import { InterviewStage } from './components/InterviewStage'
 import { useLanguage } from './i18n/LanguageContext'
@@ -35,6 +35,7 @@ function App() {
   const [jdText, setJdText] = useState('')
   const [analysis, setAnalysis] = useState<AnalyzeResponse | null>(null)
   const [tailorState, setTailorState] = useState<TailorResponse | null>(null)
+  const [tailorHistory, setTailorHistory] = useState<TailorTurn[]>([])
   const [interviewMode, setInterviewMode] = useState<InterviewMode>('mixed')
   const [interviewState, setInterviewState] = useState<InterviewResponse | null>(null)
   const [interviewHistory, setInterviewHistory] = useState<InterviewTurn[]>([])
@@ -48,6 +49,7 @@ function App() {
     setJdText('')
     setAnalysis(null)
     setTailorState(null)
+    setTailorHistory([])
     setInterviewState(null)
     setInterviewHistory([])
     setError(null)
@@ -93,6 +95,7 @@ function App() {
     try {
       const result = await startTailor(cvText, analysis)
       setTailorState(result)
+      setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
       setStage('tailor')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
@@ -105,9 +108,15 @@ function App() {
     if (!tailorState) return
     setIsLoading(true)
     setError(null)
+    setTailorHistory((prev) =>
+      prev.map((turn, i) => (i === prev.length - 1 ? { ...turn, userReply: message } : turn)),
+    )
     try {
       const result = await continueTailor(tailorState.session_id, message)
       setTailorState(result)
+      if (result.status === 'needs_info') {
+        setTailorHistory((prev) => [...prev, { agentMessage: result.agent_message, userReply: null }])
+      }
       if (result.status === 'complete') setStage('done')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
@@ -217,7 +226,9 @@ function App() {
 
       {stage === 'tailor' && tailorState && (
         <TailorStage
-          tailorState={tailorState}
+          history={tailorHistory}
+          tailoredBullets={tailorState.tailored_bullets}
+          status={tailorState.status}
           onAnswer={handleTailorAnswer}
           onComplete={() => setStage('done')}
           isLoading={isLoading}

@@ -24,11 +24,11 @@ export function AnalysisStage({
   const sorted = [...analysis.competencies].sort((a, b) => a.priority - b.priority)
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <div className="flex items-start justify-between gap-8">
         <div>
           <h1 className="font-display text-4xl font-semibold text-paper">{t.analysis.heading}</h1>
-          <p className="mt-3 max-w-md text-muted">{analysis.company_profile}</p>
+          <p className="mt-3 max-w-xl text-muted">{analysis.company_profile}</p>
         </div>
 
         <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border-2 border-accent font-display text-3xl font-semibold text-accent">
@@ -39,11 +39,11 @@ export function AnalysisStage({
         </div>
       </div>
 
-      <div className="mt-10 space-y-2">
+      <div className="mt-10 grid gap-3 md:grid-cols-2">
         {sorted.map((c) => (
           <div
             key={c.competency}
-            className="flex items-center justify-between gap-4 rounded-md border border-panel-border bg-panel px-4 py-3"
+            className="flex items-start justify-between gap-4 rounded-md border border-panel-border bg-panel px-4 py-3"
           >
             <div>
               <p className="text-sm font-medium text-paper">{c.competency}</p>
