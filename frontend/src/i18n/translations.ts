@@ -47,6 +47,10 @@ export interface Translations {
     badge: string
     heading: string
     subheading: string
+    resumeLabel: string
+    resumeEditableHint: string
+    copy: string
+    copied: string
     note: string
     cta: string
   }
@@ -119,6 +123,10 @@ export const translations: Record<Language, Translations> = {
       badge: 'Application ready',
       heading: "You're ready to apply",
       subheading: 'You have the fit analysis and the tailored resume. Nothing else to do now.',
+      resumeLabel: 'Your tailored resume',
+      resumeEditableHint: 'Feel free to edit before copying -- this is a draft, not a final answer.',
+      copy: 'Copy to clipboard',
+      copied: 'Copied!',
       note: 'If you get called for an interview later, come back and activate practice — no need to do it now.',
       cta: 'Got the interview call → Practice now',
     },
@@ -189,6 +197,10 @@ export const translations: Record<Language, Translations> = {
       badge: 'Candidatura lista',
       heading: 'Ya puedes postular',
       subheading: 'Tienes el análisis de encaje y el currículum retocado. No hace falta nada más ahora.',
+      resumeLabel: 'Tu currículum retocado',
+      resumeEditableHint: 'Puedes editarlo antes de copiarlo -- es un borrador, no una respuesta final.',
+      copy: 'Copiar al portapapeles',
+      copied: '¡Copiado!',
       note: 'Si más adelante te llaman para una entrevista, vuelve aquí y activa la práctica — no hace falta hacerlo ahora.',
       cta: 'Me han llamado para la entrevista → Practicar ahora',
     },

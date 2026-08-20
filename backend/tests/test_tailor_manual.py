@@ -27,7 +27,13 @@ COMPLETE_RESPONSE = """{
   "agent_message": "Bullets actualitzats amb les metriques que has donat.",
   "tailored_bullets": [
     {"original": "Vaig millorar la pipeline de CI", "rewritten": "Vaig reduir el temps de build un 40% migrant la pipeline de CI a paral·lelitzacio"}
-  ]
+  ],
+  "final_resume_sections": {
+    "professional_summary": "Backend engineer with CI/CD expertise.",
+    "skills": "Python, CI/CD, Docker",
+    "key_achievements": "",
+    "professional_experience": "Vaig reduir el temps de build un 40% migrant la pipeline de CI a paral·lelitzacio"
+  }
 }"""
 
 
@@ -46,6 +52,8 @@ def test_multiturn_flow_and_history_growth():
         assert second.status == "complete"
         assert len(second.tailored_bullets) == 1
         assert "40%" in second.tailored_bullets[0].rewritten
+        assert second.final_resume_sections is not None
+        assert "CI/CD" in second.final_resume_sections.skills
 
         history_after_second_turn = session_store.get_history(first.session_id)
         assert len(history_after_second_turn) == 4  # +user resposta +assistant final

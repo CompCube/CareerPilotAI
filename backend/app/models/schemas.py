@@ -68,6 +68,23 @@ class TailoredBullet(BaseModel):
     rewritten: str
 
 
+class ResumeSections(BaseModel):
+    """Full tailored resume, organized into copy-pasteable sections.
+    Only present when status='complete' -- built from what's actually in
+    the original resume, never fabricated content."""
+
+    professional_summary: str = Field(
+        default="", description="Rewritten summary/profile, or '' if the resume had none"
+    )
+    skills: str = Field(default="", description="Skills section, plain text, one per line or comma-separated")
+    key_achievements: str = Field(
+        default="", description="Key achievements/projects section, or '' if not applicable"
+    )
+    professional_experience: str = Field(
+        default="", description="Full experience section with tailored bullets integrated"
+    )
+
+
 class TailorTurn(BaseModel):
     """El que esperem que retorni l'LLM a CADA torn de la conversa del Tailor."""
 
@@ -76,6 +93,9 @@ class TailorTurn(BaseModel):
         ..., description="Pregunta a l'usuari, o resum final si status=complete"
     )
     tailored_bullets: list[TailoredBullet] = Field(default_factory=list)
+    final_resume_sections: ResumeSections | None = Field(
+        default=None, description="Nomes present quan status='complete'"
+    )
 
 
 class TailorResponse(TailorTurn):

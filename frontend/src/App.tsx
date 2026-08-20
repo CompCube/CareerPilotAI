@@ -235,7 +235,13 @@ function App() {
         />
       )}
 
-      {stage === 'done' && <DoneStage onPracticeInterview={goToInterview} />}
+      {stage === 'done' && (
+        <DoneStage
+          cvText={cvText}
+          tailoredBullets={tailorState?.tailored_bullets ?? []}
+          onPracticeInterview={goToInterview}
+        />
+      )}
 
       {stage === 'interview' && (
         <InterviewStage

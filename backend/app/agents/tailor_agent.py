@@ -36,7 +36,7 @@ def _run_turn(session_id: str) -> TailorResponse:
         messages=session_store.get_history(session_id),
         response_model=TailorTurn,
         prompt_name="tailor.turn",
-        max_tokens=1500,
+        max_tokens=2500,
     )
     session_store.append_message(session_id, "assistant", raw)
     return TailorResponse(session_id=session_id, **turn.model_dump())
