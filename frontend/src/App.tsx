@@ -90,10 +90,11 @@ function App() {
   }
 
   async function handleStartTailor() {
+    if (!analysis) return
     setIsLoading(true)
     setError(null)
     try {
-      const result = await startTailor(cvText, analysis)
+      const result = await startTailor(cvText, jdText, analysis)
       setTailorState(result)
       setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
       setStage('tailor')
@@ -114,10 +115,7 @@ function App() {
     try {
       const result = await continueTailor(tailorState.session_id, message)
       setTailorState(result)
-      if (result.status === 'needs_info') {
-        setTailorHistory((prev) => [...prev, { agentMessage: result.agent_message, userReply: null }])
-      }
-      if (result.status === 'complete') setStage('done')
+      setTailorHistory((prev) => [...prev, { agentMessage: result.agent_message, userReply: null }])
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
@@ -227,20 +225,15 @@ function App() {
       {stage === 'tailor' && tailorState && (
         <TailorStage
           history={tailorHistory}
-          tailoredBullets={tailorState.tailored_bullets}
-          status={tailorState.status}
+          tailorState={tailorState}
           onAnswer={handleTailorAnswer}
           onComplete={() => setStage('done')}
           isLoading={isLoading}
         />
       )}
 
-      {stage === 'done' && (
-        <DoneStage
-          cvText={cvText}
-          tailoredBullets={tailorState?.tailored_bullets ?? []}
-          onPracticeInterview={goToInterview}
-        />
+      {stage === 'done' && tailorState && (
+        <DoneStage sections={tailorState.sections} onPracticeInterview={goToInterview} />
       )}
 
       {stage === 'interview' && (

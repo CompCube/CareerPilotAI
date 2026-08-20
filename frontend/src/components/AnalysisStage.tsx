@@ -39,7 +39,24 @@ export function AnalysisStage({
         </div>
       </div>
 
-      <div className="mt-10 grid gap-3 md:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-lg border border-panel-border bg-panel p-4">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+            {t.analysis.roleSummaryLabel}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-paper">{analysis.role_summary}</p>
+        </div>
+        <div className="rounded-lg border border-panel-border bg-panel p-4">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+            {t.analysis.idealCandidateLabel}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-paper">
+            {analysis.ideal_candidate_profile}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 md:grid-cols-2">
         {sorted.map((c) => (
           <div
             key={c.competency}

@@ -16,6 +16,8 @@ from app.agents.analyzer_agent import run_analyzer  # noqa: E402
 from app.services.structured_output import StructuredOutputError  # noqa: E402
 
 VALID_RESPONSE = """{
+  "role_summary": "The company builds internal developer tools and needs someone who can own backend APIs end to end.",
+  "ideal_candidate_profile": "A pragmatic backend engineer who has shipped production APIs before, comfortable owning a service with minimal oversight.",
   "company_profile": "Empresa que busca un enginyer backend Python amb experiencia en APIs.",
   "competencies": [
     {"competency": "Python", "priority": 1, "type": "screening", "match_status": "match", "evidence": "5 anys amb Python al CV"},

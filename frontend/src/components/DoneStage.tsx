@@ -1,68 +1,99 @@
 import { useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
-import type { TailoredBullet } from '../api'
+import type { TailorSections } from '../api'
 
-/**
- * Splices each rewritten bullet into the original resume text, replacing
- * the matching original line. Pure text operation, no LLM call needed --
- * we already have everything from the Tailor conversation.
- */
-function buildTailoredResume(originalCv: string, bullets: TailoredBullet[]): string {
-  let result = originalCv
-  for (const b of bullets) {
-    if (b.original && result.includes(b.original)) {
-      result = result.replace(b.original, b.rewritten)
-    }
-  }
-  return result
+function buildFullResumeText(sections: TailorSections, achievementsLabel: string): string {
+  const parts = [
+    sections.title,
+    sections.subtitle,
+    '',
+    sections.professional_summary,
+    '',
+    'SKILLS',
+    sections.skills,
+    '',
+    achievementsLabel.toUpperCase(),
+    sections.achievements,
+    '',
+    'PROFESSIONAL EXPERIENCE',
+    sections.professional_experience,
+  ]
+  return parts.filter((p) => p !== undefined).join('\n')
 }
 
-export function DoneStage({
-  cvText,
-  tailoredBullets,
-  onPracticeInterview,
-}: {
-  cvText: string
-  tailoredBullets: TailoredBullet[]
-  onPracticeInterview: () => void
-}) {
+function CopyableCard({ label, content }: { label: string; content: string }) {
   const { t } = useLanguage()
-  const [resumeText, setResumeText] = useState(() => buildTailoredResume(cvText, tailoredBullets))
   const [copied, setCopied] = useState(false)
 
+  if (!content) return null
+
   async function handleCopy() {
-    await navigator.clipboard.writeText(resumeText)
+    await navigator.clipboard.writeText(content)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="rounded-lg border border-panel-border bg-panel p-4">
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">{label}</p>
+        <button
+          onClick={handleCopy}
+          className="rounded-full border border-accent/50 bg-accent/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-accent transition-colors hover:border-accent hover:bg-accent/20"
+        >
+          {copied ? t.tailor.copied : t.tailor.copy}
+        </button>
+      </div>
+      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-paper">{content}</p>
+    </div>
+  )
+}
+
+export function DoneStage({
+  sections,
+  onPracticeInterview,
+}: {
+  sections: TailorSections
+  onPracticeInterview: () => void
+}) {
+  const { t } = useLanguage()
+  const [copiedAll, setCopiedAll] = useState(false)
+
+  const achievementsLabel =
+    sections.achievements_label === 'projects'
+      ? t.tailor.achievementsProjects
+      : t.tailor.achievementsKeyAchievements
+
+  async function handleCopyAll() {
+    await navigator.clipboard.writeText(buildFullResumeText(sections, achievementsLabel))
+    setCopiedAll(true)
+    setTimeout(() => setCopiedAll(false), 1500)
+  }
+
+  return (
+    <div className="mx-auto max-w-5xl">
       <div className="inline-block rounded-full border border-match/40 bg-match/10 px-4 py-1 font-mono text-[10px] uppercase tracking-wider text-match">
         {t.done.badge}
       </div>
       <h1 className="mt-4 font-display text-4xl font-semibold text-paper">{t.done.heading}</h1>
       <p className="mt-3 text-muted">{t.done.subheading}</p>
 
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <label className="font-mono text-xs uppercase tracking-wider text-muted">
-            {t.done.resumeLabel}
-          </label>
-          <button
-            onClick={handleCopy}
-            className="rounded-full border border-accent/50 bg-accent/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-accent transition-colors hover:border-accent hover:bg-accent/20"
-          >
-            {copied ? t.done.copied : t.done.copy}
-          </button>
-        </div>
-        <p className="mt-1 text-xs text-muted">{t.done.resumeEditableHint}</p>
-        <textarea
-          value={resumeText}
-          onChange={(e) => setResumeText(e.target.value)}
-          rows={18}
-          className="mt-2 w-full resize-none rounded-md border border-panel-border bg-panel p-4 text-sm leading-relaxed text-paper focus:border-accent focus:outline-none"
-        />
+      <div className="mt-6">
+        <button
+          onClick={handleCopyAll}
+          className="rounded-md border border-accent px-5 py-2.5 font-mono text-xs uppercase tracking-wider text-accent transition-colors hover:bg-accent/10"
+        >
+          {copiedAll ? t.done.copied : t.done.copyAll}
+        </button>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <CopyableCard label={t.tailor.titleLabel} content={sections.title} />
+        <CopyableCard label={t.tailor.subtitleLabel} content={sections.subtitle} />
+        <CopyableCard label={t.tailor.summaryLabel} content={sections.professional_summary} />
+        <CopyableCard label={t.tailor.skillsSectionLabel} content={sections.skills} />
+        <CopyableCard label={achievementsLabel} content={sections.achievements} />
+        <CopyableCard label={t.tailor.experienceLabel} content={sections.professional_experience} />
       </div>
 
       <div className="mt-6 rounded-lg border border-panel-border bg-panel p-6">

@@ -76,18 +76,20 @@ async def analyze(request: Request, payload: AnalyzeRequest) -> AnalyzeResponse:
 @limiter.limit(f"{settings.rate_limit_per_minute}/minute")
 async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
     """
-    Conversacional: omet session_id per iniciar, inclou-lo + user_message
-    per continuar una sessió existent (p.ex. per respondre una pregunta
-    de l'agent).
+    Conversacional, 4 fases (extract -> interrogate -> deepen -> assemble).
+    Omet session_id per iniciar (cv_text, jd_text i analysis obligatoris),
+    inclou-lo + user_message per continuar.
     """
     try:
         if payload.session_id is None:
-            if not payload.cv_text:
+            if not payload.cv_text or not payload.jd_text or not payload.analysis:
                 raise HTTPException(
                     status_code=400,
-                    detail="cv_text is required to start a new session.",
+                    detail="cv_text, jd_text and analysis are required to start a new Tailor session.",
                 )
-            return start_tailor_session(cv_text=payload.cv_text, analysis=payload.analysis)
+            return start_tailor_session(
+                cv_text=payload.cv_text, jd_text=payload.jd_text, analysis=payload.analysis
+            )
 
         if not payload.user_message:
             raise HTTPException(

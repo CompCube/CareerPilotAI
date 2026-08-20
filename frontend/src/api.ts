@@ -39,18 +39,39 @@ export type CompetencyMatch = {
 }
 
 export type AnalyzeResponse = {
+  role_summary: string
+  ideal_candidate_profile: string
   company_profile: string
   competencies: CompetencyMatch[]
   fit_score: number
 }
 
-export type TailoredBullet = { original: string; rewritten: string }
+export type ATSIssue = { issue: string; why_it_matters: string; fix: string }
+
+export type TailorPhase = 'extract' | 'interrogate' | 'deepen' | 'assemble' | 'complete'
+
+export type TailorSections = {
+  title: string
+  subtitle: string
+  professional_summary: string
+  skills: string
+  achievements_label: 'key_achievements' | 'projects' | null
+  achievements: string
+  professional_experience: string
+}
 
 export type TailorResponse = {
   session_id: string
-  status: 'needs_info' | 'complete'
+  phase: TailorPhase
   agent_message: string
-  tailored_bullets: TailoredBullet[]
+  top_keywords: string[]
+  key_skills: string[]
+  ats_score: number | null
+  ats_issues: ATSIssue[]
+  positioning_reframe: string | null
+  section_strategy_note: string | null
+  sections: TailorSections
+  done: boolean
 }
 
 export type InterviewMode = 'recruiter' | 'technical' | 'behavioural' | 'mixed'
@@ -88,9 +109,10 @@ export function analyze(cvText: string, jdText: string): Promise<AnalyzeResponse
 
 export function startTailor(
   cvText: string,
-  analysis: AnalyzeResponse | null,
+  jdText: string,
+  analysis: AnalyzeResponse,
 ): Promise<TailorResponse> {
-  return post('/tailor', { cv_text: cvText, analysis })
+  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis })
 }
 
 export function continueTailor(sessionId: string, userMessage: string): Promise<TailorResponse> {

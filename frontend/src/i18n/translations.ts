@@ -28,6 +28,8 @@ export interface Translations {
   analysis: {
     heading: string
     fitScoreLabel: string
+    roleSummaryLabel: string
+    idealCandidateLabel: string
     statusMatch: string
     statusPartial: string
     statusGap: string
@@ -35,6 +37,21 @@ export interface Translations {
   }
   tailor: {
     heading: string
+    keywordsLabel: string
+    keySkillsLabel: string
+    atsScoreLabel: string
+    atsIssuesLabel: string
+    positioningLabel: string
+    titleLabel: string
+    subtitleLabel: string
+    summaryLabel: string
+    skillsSectionLabel: string
+    achievementsKeyAchievements: string
+    achievementsProjects: string
+    experienceLabel: string
+    copy: string
+    copied: string
+    finish: string
     before: string
     after: string
     agentAsks: string
@@ -47,9 +64,7 @@ export interface Translations {
     badge: string
     heading: string
     subheading: string
-    resumeLabel: string
-    resumeEditableHint: string
-    copy: string
+    copyAll: string
     copied: string
     note: string
     cta: string
@@ -104,6 +119,8 @@ export const translations: Record<Language, Translations> = {
     analysis: {
       heading: 'Verdict',
       fitScoreLabel: 'FIT SCORE',
+      roleSummaryLabel: 'What this offer is about',
+      idealCandidateLabel: 'Who they\'re really hiring',
       statusMatch: 'Covered',
       statusPartial: 'Partial',
       statusGap: 'Gap',
@@ -111,6 +128,21 @@ export const translations: Record<Language, Translations> = {
     },
     tailor: {
       heading: 'Resume tailoring',
+      keywordsLabel: 'Keywords they\'re looking for',
+      keySkillsLabel: 'Key skills for this role',
+      atsScoreLabel: 'ATS score',
+      atsIssuesLabel: 'Structural issues found',
+      positioningLabel: 'Positioning',
+      titleLabel: 'Title',
+      subtitleLabel: 'Subtitle',
+      summaryLabel: 'Professional Summary',
+      skillsSectionLabel: 'Skills',
+      achievementsKeyAchievements: 'Key Achievements',
+      achievementsProjects: 'Projects',
+      experienceLabel: 'Professional Experience',
+      copy: 'Copy',
+      copied: 'Copied!',
+      finish: 'Finish Tailoring →',
       before: 'Before',
       after: 'Now',
       agentAsks: 'The agent asks',
@@ -122,10 +154,8 @@ export const translations: Record<Language, Translations> = {
     done: {
       badge: 'Application ready',
       heading: "You're ready to apply",
-      subheading: 'You have the fit analysis and the tailored resume. Nothing else to do now.',
-      resumeLabel: 'Your tailored resume',
-      resumeEditableHint: 'Feel free to edit before copying -- this is a draft, not a final answer.',
-      copy: 'Copy to clipboard',
+      subheading: 'You have the fit analysis and the tailored resume. Copy each section below.',
+      copyAll: 'Copy full resume',
       copied: 'Copied!',
       note: 'If you get called for an interview later, come back and activate practice — no need to do it now.',
       cta: 'Got the interview call → Practice now',
@@ -178,6 +208,8 @@ export const translations: Record<Language, Translations> = {
     analysis: {
       heading: 'Veredicto',
       fitScoreLabel: 'FIT SCORE',
+      roleSummaryLabel: 'De qué trata esta oferta',
+      idealCandidateLabel: 'A quién buscan realmente',
       statusMatch: 'Cubierta',
       statusPartial: 'Parcial',
       statusGap: 'Hueco',
@@ -185,6 +217,21 @@ export const translations: Record<Language, Translations> = {
     },
     tailor: {
       heading: 'Retoque del currículum',
+      keywordsLabel: 'Palabras clave que buscan',
+      keySkillsLabel: 'Skills clave para este puesto',
+      atsScoreLabel: 'Puntuación ATS',
+      atsIssuesLabel: 'Problemas estructurales encontrados',
+      positioningLabel: 'Posicionamiento',
+      titleLabel: 'Título',
+      subtitleLabel: 'Subtítulo',
+      summaryLabel: 'Resumen Profesional',
+      skillsSectionLabel: 'Skills',
+      achievementsKeyAchievements: 'Logros Clave',
+      achievementsProjects: 'Proyectos',
+      experienceLabel: 'Experiencia Profesional',
+      copy: 'Copiar',
+      copied: '¡Copiado!',
+      finish: 'Finalizar Retoque →',
       before: 'Antes',
       after: 'Ahora',
       agentAsks: 'El agente pregunta',
@@ -196,10 +243,8 @@ export const translations: Record<Language, Translations> = {
     done: {
       badge: 'Candidatura lista',
       heading: 'Ya puedes postular',
-      subheading: 'Tienes el análisis de encaje y el currículum retocado. No hace falta nada más ahora.',
-      resumeLabel: 'Tu currículum retocado',
-      resumeEditableHint: 'Puedes editarlo antes de copiarlo -- es un borrador, no una respuesta final.',
-      copy: 'Copiar al portapapeles',
+      subheading: 'Tienes el análisis de encaje y el currículum retocado. Copia cada sección abajo.',
+      copyAll: 'Copiar currículum completo',
       copied: '¡Copiado!',
       note: 'Si más adelante te llaman para una entrevista, vuelve aquí y activa la práctica — no hace falta hacerlo ahora.',
       cta: 'Me han llamado para la entrevista → Practicar ahora',

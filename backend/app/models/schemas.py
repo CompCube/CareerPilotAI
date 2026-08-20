@@ -38,6 +38,12 @@ class CompetencyMatch(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
+    role_summary: str = Field(
+        ..., description="What this offer is really about, 2-4 sentences"
+    )
+    ideal_candidate_profile: str = Field(
+        ..., description="Who they're really hiring, 3-5 sentences"
+    )
     company_profile: str = Field(..., description="Que busca l'empresa, en 2-3 frases")
     competencies: list[CompetencyMatch]
     fit_score: float = Field(..., ge=0, le=100)
@@ -48,61 +54,100 @@ class AnalyzeResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Resume Tailor v2 (conversacional, 4 fases: extract -> interrogate -> deepen -> assemble)
+#
+# Principi (mateix que l'Interview agent): EL CODI decideix el flux de fases
+# (quin requirement toca, quantes preguntes de deepen, quina seccio ve ara),
+# el MODEL nomes decideix el contingut de cada resposta. Aixo fa el sistema
+# molt mes fiable que deixar que l'LLM s'autogestioni quan "ja n'hi ha prou".
+# ---------------------------------------------------------------------------
+
+TailorPhase = Literal["extract", "interrogate", "deepen", "assemble", "complete"]
+SectionStrategy = Literal["key_achievements", "projects"]
+
+
 class TailorRequest(BaseModel):
-    session_id: str | None = Field(
-        None, description="Omet per iniciar una sessio nova"
-    )
-    cv_text: str | None = Field(
-        None, description="Obligatori nomes en el primer missatge de la sessio"
-    )
+    session_id: str | None = Field(None, description="Omet per iniciar una sessio nova")
+    cv_text: str | None = Field(None, description="Obligatori nomes al primer missatge")
+    jd_text: str | None = Field(None, description="Obligatori nomes al primer missatge")
     analysis: AnalyzeResponse | None = Field(
-        None, description="Output de l'Analyzer, opcional, dona context de prioritats"
+        None, description="Output de l'Analyzer -- dona les competencies a recorrer"
     )
     user_message: str | None = Field(
         None, description="Resposta de l'usuari a una pregunta de l'agent"
     )
 
 
-class TailoredBullet(BaseModel):
-    original: str
-    rewritten: str
+class ATSIssue(BaseModel):
+    issue: str
+    why_it_matters: str
+    fix: str
 
 
-class ResumeSections(BaseModel):
-    """Full tailored resume, organized into copy-pasteable sections.
-    Only present when status='complete' -- built from what's actually in
-    the original resume, never fabricated content."""
+class TailorExtractOutput(BaseModel):
+    """Sortida esperada de l'LLM a la fase Extract (un sol torn, no conversacional)."""
 
-    professional_summary: str = Field(
-        default="", description="Rewritten summary/profile, or '' if the resume had none"
+    top_keywords: list[str] = Field(..., min_length=1, max_length=15)
+    key_skills: list[str] = Field(..., min_length=1, max_length=5)
+    ats_score: int = Field(..., ge=0, le=100)
+    ats_issues: list[ATSIssue] = Field(default_factory=list)
+
+
+class TailorQuestionOutput(BaseModel):
+    """Sortida esperada de l'LLM a les fases Interrogate/Deepen."""
+
+    has_question: bool = Field(
+        default=True,
+        description="Nomes rellevant a Deepen: false si no cal cap pregunta mes",
     )
-    skills: str = Field(default="", description="Skills section, plain text, one per line or comma-separated")
-    key_achievements: str = Field(
-        default="", description="Key achievements/projects section, or '' if not applicable"
-    )
-    professional_experience: str = Field(
-        default="", description="Full experience section with tailored bullets integrated"
-    )
+    agent_message: str = Field(default="")
 
 
-class TailorTurn(BaseModel):
-    """El que esperem que retorni l'LLM a CADA torn de la conversa del Tailor."""
+class TailorAssembleStartOutput(BaseModel):
+    """Sortida esperada del primer torn de la fase Assemble."""
 
-    status: Literal["needs_info", "complete"]
-    agent_message: str = Field(
-        ..., description="Pregunta a l'usuari, o resum final si status=complete"
-    )
-    tailored_bullets: list[TailoredBullet] = Field(default_factory=list)
-    final_resume_sections: ResumeSections | None = Field(
-        default=None, description="Nomes present quan status='complete'"
-    )
+    positioning_reframe: str
+    section_strategy: SectionStrategy
+    section_strategy_note: str
 
 
-class TailorResponse(TailorTurn):
-    """El mateix que TailorTurn, mes el session_id que afegim nosaltres
-    (l'LLM no en sap res, el gestiona el backend)."""
+class TailorSectionOutput(BaseModel):
+    """Sortida esperada de l'LLM per CADA seccio individual dins d'Assemble."""
+
+    status: Literal["section_complete", "needs_info"]
+    section_content: str = Field(default="")
+    agent_message: str = Field(default="")
+
+
+class TailorSections(BaseModel):
+    """El CV final, organitzat per seccions per fer copy-paste."""
+
+    title: str = ""
+    subtitle: str = ""
+    professional_summary: str = ""
+    skills: str = ""
+    achievements_label: SectionStrategy | None = None
+    achievements: str = ""
+    professional_experience: str = ""
+
+
+class TailorResponse(BaseModel):
+    """Estat acumulat que es retorna a cada torn -- el frontend en fa servir
+    tots els camps disponibles per pintar els panells de la dreta, no nomes
+    el missatge de xat actual."""
 
     session_id: str
+    phase: TailorPhase
+    agent_message: str
+    top_keywords: list[str] = Field(default_factory=list)
+    key_skills: list[str] = Field(default_factory=list)
+    ats_score: int | None = None
+    ats_issues: list[ATSIssue] = Field(default_factory=list)
+    positioning_reframe: str | None = None
+    section_strategy_note: str | None = None
+    sections: TailorSections = Field(default_factory=TailorSections)
+    done: bool = False
 
 
 # ---------------------------------------------------------------------------
