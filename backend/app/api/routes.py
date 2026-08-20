@@ -68,7 +68,7 @@ async def analyze(request: Request, payload: AnalyzeRequest) -> AnalyzeResponse:
         return run_analyzer(cv_text=payload.cv_text, jd_text=payload.jd_text)
     except (LLMServiceError, StructuredOutputError) as exc:
         raise HTTPException(
-            status_code=502, detail="No s'ha pogut completar l'analisi. Torna-ho a provar."
+            status_code=502, detail="Could not complete the analysis. Please try again."
         ) from exc
 
 
@@ -85,14 +85,14 @@ async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
             if not payload.cv_text:
                 raise HTTPException(
                     status_code=400,
-                    detail="cv_text es obligatori per iniciar una sessio nova.",
+                    detail="cv_text is required to start a new session.",
                 )
             return start_tailor_session(cv_text=payload.cv_text, analysis=payload.analysis)
 
         if not payload.user_message:
             raise HTTPException(
                 status_code=400,
-                detail="user_message es obligatori per continuar una sessio existent.",
+                detail="user_message is required to continue an existing session.",
             )
         try:
             return continue_tailor_session(
@@ -101,11 +101,11 @@ async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
         except KeyError:
             raise HTTPException(
                 status_code=404,
-                detail="Sessio no trobada (potser el servidor s'ha reiniciat). Inicia'n una de nova.",
+                detail="Session not found (the server may have restarted). Please start a new one.",
             )
     except (LLMServiceError, StructuredOutputError) as exc:
         raise HTTPException(
-            status_code=502, detail="No s'ha pogut processar la sol·licitud. Torna-ho a provar."
+            status_code=502, detail="Could not process the request. Please try again."
         ) from exc
 
 
@@ -121,7 +121,7 @@ async def interview(request: Request, payload: InterviewRequest) -> InterviewRes
             if not payload.cv_text or not payload.jd_text:
                 raise HTTPException(
                     status_code=400,
-                    detail="cv_text i jd_text son obligatoris per iniciar una entrevista nova.",
+                    detail="cv_text and jd_text are required to start a new interview.",
                 )
             return start_interview(
                 cv_text=payload.cv_text, jd_text=payload.jd_text, mode=payload.mode
@@ -130,7 +130,7 @@ async def interview(request: Request, payload: InterviewRequest) -> InterviewRes
         if not payload.user_answer:
             raise HTTPException(
                 status_code=400,
-                detail="user_answer es obligatori per continuar l'entrevista.",
+                detail="user_answer is required to continue the interview.",
             )
         try:
             return continue_interview(
@@ -139,11 +139,11 @@ async def interview(request: Request, payload: InterviewRequest) -> InterviewRes
         except KeyError:
             raise HTTPException(
                 status_code=404,
-                detail="Sessio no trobada (potser el servidor s'ha reiniciat). Inicia'n una de nova.",
+                detail="Session not found (the server may have restarted). Please start a new one.",
             )
         except InterviewFinishedError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
     except (LLMServiceError, StructuredOutputError) as exc:
         raise HTTPException(
-            status_code=502, detail="No s'ha pogut processar la sol·licitud. Torna-ho a provar."
+            status_code=502, detail="Could not process the request. Please try again."
         ) from exc
