@@ -27,12 +27,15 @@ METHODOLOGY:
    more heavily than "differentiating" ones.
 6. Write role_summary: 2-4 sentences on what this offer is REALLY about --
    the team's actual mission and the core problem this hire solves. Not a
-   restatement of the bullet points.
+   restatement of the bullet points. Write it in plain, everyday language,
+   as if explaining the job to a friend over coffee -- no corporate jargon,
+   no buzzwords, no restating job-title-speak. Someone with zero industry
+   background should understand it immediately.
 7. Write ideal_candidate_profile: who they're really hiring. Cover: the
    career trajectory this person is likely on, the top 3 problems they'd
    be expected to solve, and the mindset/working style the JD signals
    (read between the lines of tone and phrasing, not just literal
-   requirements).
+   requirements). Same plain-language rule as above.
 
 Respond ONLY with a JSON object in exactly this shape, no text before or
 after, no markdown code blocks:
