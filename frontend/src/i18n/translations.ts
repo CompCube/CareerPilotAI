@@ -93,6 +93,12 @@ export interface Translations {
   footer: {
     copyright: string
     viewSource: string
+    privacy: string
+    terms: string
+  }
+  legal: {
+    privacy: { title: string; paragraphs: string[] }
+    terms: { title: string; paragraphs: string[] }
   }
 }
 
@@ -190,6 +196,27 @@ export const translations: Record<Language, Translations> = {
     footer: {
       copyright: '© 2026 CareerPilot AI — portfolio project',
       viewSource: 'View source ↗',
+      privacy: 'Privacy',
+      terms: 'Terms',
+    },
+    legal: {
+      privacy: {
+        title: 'Privacy',
+        paragraphs: [
+          "This is a portfolio demo, not a production service — treat it accordingly and avoid pasting sensitive personal data.",
+          'Your resume and job description text are sent to Anthropic\'s API to generate the analysis, tailored resume, and interview questions. No account, login, or persistent database exists in this version — everything lives only in your browser session and is lost when you close the tab or the backend restarts.',
+          'Uploaded PDFs are parsed in memory to extract text and are never stored.',
+          "No analytics, tracking, or third-party cookies are used.",
+        ],
+      },
+      terms: {
+        title: 'Terms',
+        paragraphs: [
+          'This is a personal portfolio project built to demonstrate AI engineering skills, not a commercial product. It is provided as-is, with no warranty of accuracy or availability.',
+          'AI-generated content (fit analysis, tailored resume sections, interview questions) can be wrong or incomplete. Always review and verify before using it for a real job application.',
+          'The Tailor agent is designed to never invent metrics or experience you did not provide, but no AI system is perfect — you are responsible for the accuracy of anything you submit to an employer.',
+        ],
+      },
     },
   },
   es: {
@@ -285,6 +312,27 @@ export const translations: Record<Language, Translations> = {
     footer: {
       copyright: '© 2026 CareerPilot AI — proyecto de portfolio',
       viewSource: 'Ver código ↗',
+      privacy: 'Privacidad',
+      terms: 'Términos',
+    },
+    legal: {
+      privacy: {
+        title: 'Privacidad',
+        paragraphs: [
+          'Esto es una demo de portfolio, no un servicio en producción — trátalo como tal y evita pegar datos personales sensibles.',
+          'El texto de tu currículum y la oferta de trabajo se envían a la API de Anthropic para generar el análisis, el currículum retocado y las preguntas de entrevista. Esta versión no tiene cuentas, login ni base de datos persistente — todo vive solo en tu sesión del navegador y se pierde al cerrar la pestaña o si el servidor se reinicia.',
+          'Los PDFs que subes se procesan en memoria para extraer el texto y nunca se guardan.',
+          'No se usan analíticas, seguimiento ni cookies de terceros.',
+        ],
+      },
+      terms: {
+        title: 'Términos',
+        paragraphs: [
+          'Este es un proyecto personal de portfolio construido para demostrar habilidades de ingeniería de IA, no un producto comercial. Se ofrece tal cual, sin garantía de precisión ni disponibilidad.',
+          'El contenido generado por IA (análisis de encaje, secciones del currículum, preguntas de entrevista) puede ser incorrecto o incompleto. Revísalo y verifícalo siempre antes de usarlo en una candidatura real.',
+          'El agente Tailor está diseñado para no inventar nunca métricas o experiencia que no hayas aportado, pero ningún sistema de IA es perfecto — eres responsable de la exactitud de lo que envíes a un empleador.',
+        ],
+      },
     },
   },
 }

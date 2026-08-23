@@ -47,7 +47,7 @@ export function StageStepper({
   const currentIndex = keys.findIndex((k) => k === current)
 
   return (
-    <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider">
+    <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-wider">
       {keys.map((key, index) => {
         const isDone = index < currentIndex
         const isCurrent = index === currentIndex

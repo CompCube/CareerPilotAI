@@ -18,6 +18,7 @@ import { AnalysisStage } from './components/AnalysisStage'
 import { TailorStage, type TailorTurn } from './components/TailorStage'
 import { DoneStage } from './components/DoneStage'
 import { InterviewStage } from './components/InterviewStage'
+import { LegalModal } from './components/LegalModal'
 import { useLanguage } from './i18n/LanguageContext'
 import type { Language } from './i18n/translations'
 
@@ -25,6 +26,7 @@ type InterviewTurn = { question: string; answer: string | null }
 
 function App() {
   const { t, lang, setLang } = useLanguage()
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null)
 
   const [mode, setMode] = useState<AppMode | null>(null)
   const [stage, setStage] = useState<Stage>('mode')
@@ -174,14 +176,14 @@ function App() {
   return (
     <div className="flex min-h-screen flex-col bg-ink">
       <header className="w-full border-b border-panel-border bg-panel/40">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <div className="flex w-full items-center justify-between px-6 py-4 lg:px-12">
           <button
             onClick={resetToMenu}
             className="font-display text-lg font-semibold text-paper transition-opacity hover:opacity-80"
           >
             {t.appName}
           </button>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-8">
             <StageStepper
               current={stage}
               mode={mode}
@@ -268,18 +270,28 @@ function App() {
       </main>
 
       <footer className="w-full border-t border-panel-border bg-panel/40">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-5 font-mono text-xs text-muted">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-5 font-mono text-xs text-muted">
           <span>{t.footer.copyright}</span>
-          <a
-            href="https://github.com/CompCube/CareerPilotAI"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors hover:text-accent"
-          >
-            {t.footer.viewSource}
-          </a>
+          <div className="flex items-center gap-5">
+            <button onClick={() => setLegalModal('privacy')} className="transition-colors hover:text-accent">
+              {t.footer.privacy}
+            </button>
+            <button onClick={() => setLegalModal('terms')} className="transition-colors hover:text-accent">
+              {t.footer.terms}
+            </button>
+            <a
+              href="https://github.com/CompCube/CareerPilotAI"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-accent"
+            >
+              {t.footer.viewSource}
+            </a>
+          </div>
         </div>
       </footer>
+
+      {legalModal && <LegalModal kind={legalModal} onClose={() => setLegalModal(null)} />}
     </div>
   )
 }
