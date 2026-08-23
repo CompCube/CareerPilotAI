@@ -30,10 +30,7 @@ METHODOLOGY:
 5. Calculate a fit_score from 0 to 100, weighting "screening" competencies
    more heavily than "differentiating" ones.
 6. Write role_summary: 2-4 sentences on what this offer is REALLY about --
-   the team's actual mission, the core problem this hire solves, and
-   CONCRETE day-to-day tasks this person would actually be doing (not
-   just abstract mission language). Someone reading it should know what
-   their Tuesday would look like, not just "why the role exists". Not a
+   the team's actual mission and the core problem this hire solves. Not a
    restatement of the bullet points. Write it in plain, everyday language,
    as if explaining the job to a friend over coffee -- no corporate jargon,
    no buzzwords, no restating job-title-speak. Someone with zero industry
