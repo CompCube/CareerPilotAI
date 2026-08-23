@@ -26,10 +26,7 @@ export function AnalysisStage({
   return (
     <div className="mx-auto max-w-5xl">
       <div className="flex items-start justify-between gap-8">
-        <div>
-          <h1 className="font-display text-4xl font-semibold text-paper">{t.analysis.heading}</h1>
-          <p className="mt-3 max-w-xl text-muted">{analysis.company_profile}</p>
-        </div>
+        <h1 className="font-display text-4xl font-semibold text-paper">{t.analysis.heading}</h1>
 
         <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border-2 border-accent font-display text-3xl font-semibold text-accent">
           {Math.round(analysis.fit_score)}
@@ -39,18 +36,29 @@ export function AnalysisStage({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 rounded-lg border border-panel-border bg-panel p-4">
+        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+          {t.analysis.companyLabel}
+        </p>
+        <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
+          {analysis.company_profile}
+        </p>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="rounded-lg border border-panel-border bg-panel p-4">
           <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
             {t.analysis.roleSummaryLabel}
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-paper">{analysis.role_summary}</p>
+          <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
+            {analysis.role_summary}
+          </p>
         </div>
         <div className="rounded-lg border border-panel-border bg-panel p-4">
           <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
             {t.analysis.idealCandidateLabel}
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-paper">
+          <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
             {analysis.ideal_candidate_profile}
           </p>
         </div>

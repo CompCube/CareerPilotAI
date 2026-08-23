@@ -28,6 +28,7 @@ export interface Translations {
   analysis: {
     heading: string
     fitScoreLabel: string
+    companyLabel: string
     roleSummaryLabel: string
     idealCandidateLabel: string
     statusMatch: string
@@ -120,7 +121,8 @@ export const translations: Record<Language, Translations> = {
     analysis: {
       heading: 'Verdict',
       fitScoreLabel: 'FIT SCORE',
-      roleSummaryLabel: 'What this offer is about',
+      companyLabel: 'About the company',
+      roleSummaryLabel: 'What you\'d actually be doing',
       idealCandidateLabel: 'Who they\'re really hiring',
       statusMatch: 'Covered',
       statusPartial: 'Partial',
@@ -210,7 +212,8 @@ export const translations: Record<Language, Translations> = {
     analysis: {
       heading: 'Veredicto',
       fitScoreLabel: 'FIT SCORE',
-      roleSummaryLabel: 'De qué trata esta oferta',
+      companyLabel: 'Sobre la empresa',
+      roleSummaryLabel: 'Qué harías exactamente',
       idealCandidateLabel: 'A quién buscan realmente',
       statusMatch: 'Cubierta',
       statusPartial: 'Parcial',
