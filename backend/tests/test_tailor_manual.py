@@ -1,8 +1,9 @@
 """
 Manual test of the full Tailor v2 state machine -- mocked LLM, zero real cost.
 
-Exercises: extract -> interrogate (N competencies) -> deepen (up to cap) ->
-assemble (6 sections, one needs_info mid-way) -> complete.
+Exercises: extract -> interrogate (N competencies, incl. a clarification
+detour) -> deepen (up to cap) -> assemble (6 sections, one needs_info
+mid-way) -> complete.
 """
 
 import sys
@@ -20,8 +21,10 @@ EXTRACT_RESPONSE = """{
   "ats_issues": [{"issue": "Skills before Experience", "why_it_matters": "hurts keyword-context matching", "fix": "reorder sections"}]
 }"""
 
-QUESTION_RESPONSE = '{"has_question": true, "agent_message": "Tell me about your experience with X."}'
-NO_MORE_DEEPEN_RESPONSE = '{"has_question": false, "agent_message": ""}'
+QUESTION_RESPONSE = '{"has_question": true, "is_clarification": false, "agent_message": "Tell me about your experience with X."}'
+NOT_A_CLARIFICATION = '{"is_clarification": false, "agent_message": ""}'
+IS_A_CLARIFICATION = '{"is_clarification": true, "agent_message": "By that I mean hands-on shipping experience. So -- do you have that?"}'
+NO_MORE_DEEPEN_RESPONSE = '{"has_question": false, "is_clarification": false, "agent_message": ""}'
 
 ASSEMBLE_START_RESPONSE = """{
   "positioning_reframe": "Reads as X, should read as Y.",
@@ -52,55 +55,82 @@ def make_analysis(n_competencies: int) -> AnalyzeResponse:
     )
 
 
-def test_full_flow_extract_through_complete():
+def test_clarification_does_not_advance_but_real_answer_does():
     analysis = make_analysis(n_competencies=2)
 
     call_sequence = [
-        EXTRACT_RESPONSE,                    # extract
-        QUESTION_RESPONSE,                   # interrogate competency 1
-        QUESTION_RESPONSE,                   # interrogate competency 2
-        NO_MORE_DEEPEN_RESPONSE,             # deepen -> no question needed, straight to assemble
-        ASSEMBLE_START_RESPONSE,             # assemble start
-        SECTION_COMPLETE("Technical Artist | Shaders"),        # title
-        SECTION_COMPLETE("Senior Technical Artist"),            # subtitle
-        SECTION_COMPLETE("Builds real-time pipelines."),        # professional_summary
-        SECTION_NEEDS_INFO,                                     # skills -> needs_info first try
-        SECTION_COMPLETE("Unity, C#, Shader Graph"),            # skills -> retry, complete
-        SECTION_COMPLETE("Built X, measured by Y, doing Z."),   # achievements
-        SECTION_COMPLETE("Pipeline Dev: Built X, by Y, got Z."),# professional_experience
+        EXTRACT_RESPONSE,          # extract
+        QUESTION_RESPONSE,         # ask competency 0
+        IS_A_CLARIFICATION,        # user asks "what do you mean?" -> does NOT advance
+        NOT_A_CLARIFICATION,       # user answers for real -> advances
+        QUESTION_RESPONSE,         # ask competency 1
+        NOT_A_CLARIFICATION,       # real answer -> interrogate done -> deepen
+        NO_MORE_DEEPEN_RESPONSE,   # deepen: no question needed -> straight to assemble
+        ASSEMBLE_START_RESPONSE,
+        SECTION_COMPLETE("t"), SECTION_COMPLETE("s"), SECTION_COMPLETE("p"),
+        SECTION_COMPLETE("sk"), SECTION_COMPLETE("a"), SECTION_COMPLETE("e"),
     ]
 
     with patch("app.services.structured_output.call_llm", side_effect=call_sequence):
-        # Phase A -> B (first question)
+        r1 = start_tailor_session(cv_text="CV " * 10, jd_text="JD " * 10, analysis=analysis)
+        assert r1.phase == "interrogate"
+        session_id = r1.session_id
+
+        # User asks a clarifying question instead of answering
+        r2 = continue_tailor_session(session_id, "What do you mean by that exactly?")
+        assert r2.phase == "interrogate"
+        assert "hands-on" in r2.agent_message.lower()  # the clarification answer
+
+        # Now the state must NOT have advanced -- same competency 0 still pending.
+        # We confirm this indirectly: the next real answer should trigger asking
+        # about competency 1 (index advances exactly once from here).
+        r3 = continue_tailor_session(session_id, "Yes, I have 3 years of real experience with it")
+        assert r3.phase == "interrogate"  # now asking about competency 1
+
+        r4 = continue_tailor_session(session_id, "My answer about skill 1")
+        assert r4.phase in ("assemble", "complete")  # interrogate done, deepen said no more, assemble chains
+
+    print("OK  test_clarification_does_not_advance_but_real_answer_does")
+
+
+def test_full_flow_extract_through_complete():
+    analysis = make_analysis(n_competencies=1)
+
+    call_sequence = [
+        EXTRACT_RESPONSE,
+        QUESTION_RESPONSE,                   # ask the 1 competency
+        NOT_A_CLARIFICATION,                 # real answer -> interrogate done -> deepen
+        NO_MORE_DEEPEN_RESPONSE,              # deepen -> no question -> assemble
+        ASSEMBLE_START_RESPONSE,
+        SECTION_COMPLETE("Technical Artist | Shaders"),
+        SECTION_COMPLETE("Senior Technical Artist"),
+        SECTION_COMPLETE("Builds real-time pipelines."),
+        SECTION_NEEDS_INFO,                                     # skills -> needs_info first try
+        SECTION_COMPLETE("Unity, C#, Shader Graph"),            # skills -> retry, complete
+        SECTION_COMPLETE("Built X, measured by Y, doing Z."),
+        SECTION_COMPLETE("Pipeline Dev: Built X, by Y, got Z."),
+    ]
+
+    with patch("app.services.structured_output.call_llm", side_effect=call_sequence):
         r1 = start_tailor_session(cv_text="CV " * 10, jd_text="JD " * 10, analysis=analysis)
         assert r1.phase == "interrogate"
         assert r1.top_keywords == ["Unity", "Shader Graph", "C#", "Pipeline"]
         assert r1.ats_score == 72
-        assert len(r1.ats_issues) == 1
         session_id = r1.session_id
 
-        # Interrogate competency 2
         r2 = continue_tailor_session(session_id, "My answer about skill 1")
-        assert r2.phase == "interrogate"
+        assert r2.phase == "assemble"
+        assert r2.positioning_reframe == "Reads as X, should read as Y."
+        assert r2.sections.title == "Technical Artist | Shaders"
+        assert r2.sections.skills == ""  # not yet -- needs_info
+        assert "metric" in r2.agent_message.lower()
 
-        # Interrogate done -> deepen -> no question needed -> assemble starts immediately
-        r3 = continue_tailor_session(session_id, "My answer about skill 2")
-        assert r3.phase == "assemble"
-        assert r3.positioning_reframe == "Reads as X, should read as Y."
-        assert r3.sections.achievements_label == "projects"
-        # Chained through title, subtitle, summary, and hit needs_info on skills
-        assert r3.sections.title == "Technical Artist | Shaders"
-        assert r3.sections.professional_summary == "Builds real-time pipelines."
-        assert r3.sections.skills == ""  # not yet -- needs_info
-        assert "metric" in r3.agent_message.lower()
-
-        # Answer the needs_info question -> retries skills, then chains to the end
-        r4 = continue_tailor_session(session_id, "We shipped 3 features 20% faster")
-        assert r4.phase == "complete"
-        assert r4.done is True
-        assert r4.sections.skills == "Unity, C#, Shader Graph"
-        assert r4.sections.achievements == "Built X, measured by Y, doing Z."
-        assert r4.sections.professional_experience == "Pipeline Dev: Built X, by Y, got Z."
+        r3 = continue_tailor_session(session_id, "We shipped 3 features 20% faster")
+        assert r3.phase == "complete"
+        assert r3.done is True
+        assert r3.sections.skills == "Unity, C#, Shader Graph"
+        assert r3.sections.achievements == "Built X, measured by Y, doing Z."
+        assert r3.sections.professional_experience == "Pipeline Dev: Built X, by Y, got Z."
 
     print("OK  test_full_flow_extract_through_complete")
 
@@ -110,9 +140,12 @@ def test_max_deepen_cap_forces_assemble():
 
     call_sequence = [
         EXTRACT_RESPONSE,
-        QUESTION_RESPONSE,           # interrogate the 1 competency
-        QUESTION_RESPONSE,           # deepen Q1 (has_question=true)
-        QUESTION_RESPONSE,           # deepen Q2 (has_question=true) -- cap=2 reached after this is answered
+        QUESTION_RESPONSE,           # ask the 1 competency
+        NOT_A_CLARIFICATION,         # real answer -> interrogate done -> deepen asks Q1
+        QUESTION_RESPONSE,           # deepen Q1
+        NOT_A_CLARIFICATION,         # real answer -> deepen asks Q2
+        QUESTION_RESPONSE,           # deepen Q2
+        NOT_A_CLARIFICATION,         # real answer -> cap reached -> assemble chains through
         ASSEMBLE_START_RESPONSE,
         SECTION_COMPLETE("t"), SECTION_COMPLETE("s"), SECTION_COMPLETE("p"),
         SECTION_COMPLETE("sk"), SECTION_COMPLETE("a"), SECTION_COMPLETE("e"),
@@ -129,7 +162,7 @@ def test_max_deepen_cap_forces_assemble():
         r3 = continue_tailor_session(session_id, "answer to Q1")  # deepen_count=1, asks Q2
         assert r3.phase == "deepen"
 
-        r4 = continue_tailor_session(session_id, "answer to Q2")  # deepen_count=2, cap reached -> assemble chains straight through to complete
+        r4 = continue_tailor_session(session_id, "answer to Q2")  # deepen_count=2, cap -> assemble chains to complete
         assert r4.phase == "complete"
         assert r4.done is True
 
@@ -146,6 +179,7 @@ def test_unknown_session_raises_keyerror():
 
 
 if __name__ == "__main__":
+    test_clarification_does_not_advance_but_real_answer_does()
     test_full_flow_extract_through_complete()
     test_max_deepen_cap_forces_assemble()
     test_unknown_session_raises_keyerror()

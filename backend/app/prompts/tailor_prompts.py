@@ -96,6 +96,38 @@ def build_interrogate_message(competency: str, jd_text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Clarification check -- reused by both Interrogate and Deepen when the user
+# replies. Decides whether the reply is a real answer (advance) or a
+# question/confusion about what was just asked (answer it, re-ask the same
+# question, do NOT advance).
+# ---------------------------------------------------------------------------
+
+TAILOR_CLARIFICATION_CHECK_PROMPT = f"""You are the same Senior Hiring Manager
+continuing this conversation. You just asked the candidate a question
+(visible in the conversation history above). Look at their most recent
+message and classify it:
+
+{SECURITY_GUARD}
+
+- If it's a genuine answer describing their real experience related to your
+  question, set is_clarification=false. Leave agent_message empty -- do not
+  ask anything else, the next step happens separately.
+- If it's instead a question, a request for clarification, or shows
+  confusion about what you're asking, set is_clarification=true.
+  agent_message must (1) clearly answer their question or clarify what you
+  meant, and (2) end by re-asking your original question, verbatim or
+  rephrased, so the conversation continues naturally.
+
+Respond ONLY with JSON, no text before or after, no markdown code blocks:
+
+{{
+  "is_clarification": true | false,
+  "agent_message": "string, empty if is_clarification is false"
+}}
+"""
+
+
+# ---------------------------------------------------------------------------
 # Phase C -- Deepen (same persona, agent decides if a question is needed)
 # ---------------------------------------------------------------------------
 

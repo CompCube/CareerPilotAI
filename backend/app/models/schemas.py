@@ -105,6 +105,10 @@ class TailorQuestionOutput(BaseModel):
         default=True,
         description="Nomes rellevant a Deepen: false si no cal cap pregunta mes",
     )
+    is_clarification: bool = Field(
+        default=False,
+        description="True si el darrer missatge de l'usuari era un dubte/pregunta, no una resposta real",
+    )
     agent_message: str = Field(default="")
 
 

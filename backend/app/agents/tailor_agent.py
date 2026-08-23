@@ -27,6 +27,7 @@ from app.models.schemas import (
 from app.prompts.tailor_prompts import (
     TAILOR_ASSEMBLE_SECTION_PROMPT,
     TAILOR_ASSEMBLE_START_PROMPT,
+    TAILOR_CLARIFICATION_CHECK_PROMPT,
     TAILOR_DEEPEN_PROMPT,
     TAILOR_EXTRACT_PROMPT,
     TAILOR_INTERROGATE_PROMPT,
@@ -231,6 +232,26 @@ def _ask_section(session_id: str, state: _TailorState, extra_context: str | None
 
 
 # ---------------------------------------------------------------------------
+# Comprovacio de claredat -- compartida per Interrogate i Deepen
+# ---------------------------------------------------------------------------
+
+
+def _check_clarification(
+    session_id: str, state: _TailorState, user_message: str
+) -> TailorQuestionOutput:
+    session_store.append_message(session_id, "user", user_message)
+    result, raw = call_llm_structured(
+        system_prompt=TAILOR_CLARIFICATION_CHECK_PROMPT + language_instruction(state.language),
+        messages=session_store.get_history(session_id),
+        response_model=TailorQuestionOutput,
+        prompt_name="tailor.clarification_check",
+        max_tokens=400,
+    )
+    session_store.append_message(session_id, "assistant", raw)
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Entry point for continuing an existing session
 # ---------------------------------------------------------------------------
 
@@ -241,7 +262,9 @@ def continue_tailor_session(session_id: str, user_message: str) -> TailorRespons
         raise KeyError(f"Unknown tailor session: {session_id}")
 
     if state.phase == "interrogate":
-        session_store.append_message(session_id, "user", user_message)
+        check = _check_clarification(session_id, state, user_message)
+        if check.is_clarification:
+            return _build_response(state, session_id, agent_message=check.agent_message)
         state.requirement_idx += 1
         if state.requirement_idx < len(state.competencies):
             return _ask_next_requirement(session_id, state)
@@ -250,7 +273,9 @@ def continue_tailor_session(session_id: str, user_message: str) -> TailorRespons
         return _ask_deepen(session_id, state)
 
     if state.phase == "deepen":
-        session_store.append_message(session_id, "user", user_message)
+        check = _check_clarification(session_id, state, user_message)
+        if check.is_clarification:
+            return _build_response(state, session_id, agent_message=check.agent_message)
         state.deepen_count += 1
         if state.deepen_count >= MAX_DEEPEN_QUESTIONS:
             return _start_assemble(session_id, state)

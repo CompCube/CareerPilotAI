@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 import type { TailorResponse } from '../api'
 import { FormattedBullets, stripBoldMarkers } from '../utils/formatBullets'
@@ -58,6 +58,11 @@ function CopyableCard({
 export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoading }: Props) {
   const { t } = useLanguage()
   const [reply, setReply] = useState('')
+  const chatScrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: 'smooth' })
+  }, [history])
 
   const { sections } = tailorState
   const achievementsLabel =
@@ -72,9 +77,13 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
       <h1 className="font-display text-4xl font-semibold text-paper">{t.tailor.heading}</h1>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* --- Esquerra: xat, amb scroll propi (no fa scroll tota la pagina) --- */}
-        <div className="flex flex-col">
-          <div className="max-h-[65vh] space-y-4 overflow-y-auto rounded-lg border border-panel-border bg-ink/40 p-3">
+        {/* --- Esquerra: xat, incrustat amb el seu propi scroll, ancorat
+            a la vista mentre la pagina fa scroll (sticky) --- */}
+        <div className="sticky top-6 flex max-h-[calc(100vh-3rem)] flex-col">
+          <div
+            ref={chatScrollRef}
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto rounded-lg border border-panel-border bg-ink/40 p-3"
+          >
             {history.map((turn, i) => (
               <div key={i}>
                 <div className="rounded-lg border border-panel-border bg-panel px-4 py-3.5">
@@ -94,7 +103,7 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
           </div>
 
           {canReply && (
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex shrink-0 gap-2">
               <input
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
@@ -123,15 +132,16 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
           {tailorState.done && (
             <button
               onClick={onComplete}
-              className="mt-4 rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
+              className="mt-4 shrink-0 rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
             >
               {t.tailor.finish}
             </button>
           )}
         </div>
 
-        {/* --- Dreta: panells que es van omplint --- */}
-        <div className="max-h-[80vh] space-y-3 overflow-y-auto pr-1">
+        {/* --- Dreta: panells fixes, flueixen amb la pagina normal (sense
+            scroll intern) --- */}
+        <div className="space-y-3">
           {tailorState.top_keywords.length > 0 && (
             <div className="rounded-lg border border-panel-border bg-panel p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
