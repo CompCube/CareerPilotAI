@@ -103,16 +103,17 @@ export async function extractPdfText(file: File): Promise<string> {
   return data.text
 }
 
-export function analyze(cvText: string, jdText: string): Promise<AnalyzeResponse> {
-  return post('/analyze', { cv_text: cvText, jd_text: jdText })
+export function analyze(cvText: string, jdText: string, lang: string): Promise<AnalyzeResponse> {
+  return post('/analyze', { cv_text: cvText, jd_text: jdText, language: lang })
 }
 
 export function startTailor(
   cvText: string,
   jdText: string,
   analysis: AnalyzeResponse,
+  lang: string,
 ): Promise<TailorResponse> {
-  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis })
+  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis, language: lang })
 }
 
 export function continueTailor(sessionId: string, userMessage: string): Promise<TailorResponse> {
@@ -123,8 +124,9 @@ export function startInterview(
   cvText: string,
   jdText: string,
   mode: InterviewMode,
+  lang: string,
 ): Promise<InterviewResponse> {
-  return post('/interview', { cv_text: cvText, jd_text: jdText, mode })
+  return post('/interview', { cv_text: cvText, jd_text: jdText, mode, language: lang })
 }
 
 export function continueInterview(

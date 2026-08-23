@@ -65,7 +65,7 @@ async def extract_pdf(request: Request, file: UploadFile = File(...)) -> PDFExtr
 async def analyze(request: Request, payload: AnalyzeRequest) -> AnalyzeResponse:
     """Compara CV amb JD: perfil de l'empresa, competencies, fit score."""
     try:
-        return run_analyzer(cv_text=payload.cv_text, jd_text=payload.jd_text)
+        return run_analyzer(cv_text=payload.cv_text, jd_text=payload.jd_text, language=payload.language)
     except (LLMServiceError, StructuredOutputError) as exc:
         raise HTTPException(
             status_code=502, detail="Could not complete the analysis. Please try again."
@@ -88,7 +88,8 @@ async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
                     detail="cv_text, jd_text and analysis are required to start a new Tailor session.",
                 )
             return start_tailor_session(
-                cv_text=payload.cv_text, jd_text=payload.jd_text, analysis=payload.analysis
+                cv_text=payload.cv_text, jd_text=payload.jd_text, analysis=payload.analysis,
+                language=payload.language,
             )
 
         if not payload.user_message:
@@ -126,7 +127,8 @@ async def interview(request: Request, payload: InterviewRequest) -> InterviewRes
                     detail="cv_text and jd_text are required to start a new interview.",
                 )
             return start_interview(
-                cv_text=payload.cv_text, jd_text=payload.jd_text, mode=payload.mode
+                cv_text=payload.cv_text, jd_text=payload.jd_text, mode=payload.mode,
+                language=payload.language,
             )
 
         if not payload.user_answer:

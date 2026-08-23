@@ -23,7 +23,10 @@ METHODOLOGY:
    candidate apart).
 4. Compare each competency against the resume: "match" (direct evidence),
    "partial" (adjacent experience, could be framed to fit), or "gap"
-   (no evidence).
+   (no evidence). For the evidence field: vary your phrasing naturally,
+   the way a recruiter actually talks -- do NOT start every single one
+   with the same template ("Resume shows...", "Resume lists...", "Resume
+   demonstrates..."). Cite the specific detail directly instead.
 5. Calculate a fit_score from 0 to 100, weighting "screening" competencies
    more heavily than "differentiating" ones.
 6. Write role_summary: 2-4 sentences on what this offer is REALLY about --

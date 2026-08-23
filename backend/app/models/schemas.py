@@ -25,6 +25,7 @@ class PDFExtractResponse(BaseModel):
 class AnalyzeRequest(BaseModel):
     cv_text: str = Field(..., min_length=20, description="Text pla del CV")
     jd_text: str = Field(..., min_length=20, description="Text pla de la JD")
+    language: Literal["en", "es"] = "en"
 
 
 class CompetencyMatch(BaseModel):
@@ -79,6 +80,7 @@ class TailorRequest(BaseModel):
     user_message: str | None = Field(
         None, description="Resposta de l'usuari a una pregunta de l'agent"
     )
+    language: Literal["en", "es"] = "en"
 
 
 class ATSIssue(BaseModel):
@@ -167,6 +169,7 @@ class InterviewRequest(BaseModel):
     user_answer: str | None = Field(
         None, description="Resposta de l'usuari a la pregunta anterior"
     )
+    language: Literal["en", "es"] = "en"
 
 
 class InterviewQuestion(BaseModel):

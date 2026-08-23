@@ -36,6 +36,7 @@ from app.prompts.tailor_prompts import (
     build_interrogate_message,
     build_section_request,
 )
+from app.prompts.language import language_instruction
 from app.services import session_store
 from app.services.structured_output import call_llm_structured
 
@@ -58,6 +59,7 @@ class _TailorState:
     cv_text: str
     jd_text: str
     competencies: list[CompetencyMatch]
+    language: str = "en"
     phase: TailorPhase = "extract"
     requirement_idx: int = 0
     deepen_count: int = 0
@@ -95,14 +97,18 @@ def _build_response(state: _TailorState, session_id: str, agent_message: str, do
 # ---------------------------------------------------------------------------
 
 
-def start_tailor_session(cv_text: str, jd_text: str, analysis: AnalyzeResponse) -> TailorResponse:
+def start_tailor_session(
+    cv_text: str, jd_text: str, analysis: AnalyzeResponse, language: str = "en"
+) -> TailorResponse:
     session_id = session_store.create_session()
     sorted_competencies = sorted(analysis.competencies, key=lambda c: c.priority)
-    state = _TailorState(cv_text=cv_text, jd_text=jd_text, competencies=sorted_competencies)
+    state = _TailorState(
+        cv_text=cv_text, jd_text=jd_text, competencies=sorted_competencies, language=language
+    )
     _tailor_states[session_id] = state
 
     extract_result, _raw = call_llm_structured(
-        system_prompt=TAILOR_EXTRACT_PROMPT,
+        system_prompt=TAILOR_EXTRACT_PROMPT + language_instruction(state.language),
         messages=[{"role": "user", "content": build_extract_message(cv_text, jd_text)}],
         response_model=TailorExtractOutput,
         prompt_name="tailor.extract",
@@ -132,7 +138,7 @@ def _ask_next_requirement(session_id: str, state: _TailorState) -> TailorRespons
         session_id, "user", build_interrogate_message(competency.competency, state.jd_text)
     )
     result, raw = call_llm_structured(
-        system_prompt=TAILOR_INTERROGATE_PROMPT,
+        system_prompt=TAILOR_INTERROGATE_PROMPT + language_instruction(state.language),
         messages=session_store.get_history(session_id),
         response_model=TailorQuestionOutput,
         prompt_name="tailor.interrogate",
@@ -150,7 +156,7 @@ def _ask_next_requirement(session_id: str, state: _TailorState) -> TailorRespons
 def _ask_deepen(session_id: str, state: _TailorState) -> TailorResponse:
     session_store.append_message(session_id, "user", build_deepen_message(state.cv_text, state.jd_text))
     result, raw = call_llm_structured(
-        system_prompt=TAILOR_DEEPEN_PROMPT,
+        system_prompt=TAILOR_DEEPEN_PROMPT + language_instruction(state.language),
         messages=session_store.get_history(session_id),
         response_model=TailorQuestionOutput,
         prompt_name="tailor.deepen",
@@ -170,7 +176,7 @@ def _ask_deepen(session_id: str, state: _TailorState) -> TailorResponse:
 def _start_assemble(session_id: str, state: _TailorState) -> TailorResponse:
     state.phase = "assemble"
     result, _raw = call_llm_structured(
-        system_prompt=TAILOR_ASSEMBLE_START_PROMPT,
+        system_prompt=TAILOR_ASSEMBLE_START_PROMPT + language_instruction(state.language),
         messages=[
             {
                 "role": "user",
@@ -203,7 +209,7 @@ def _ask_section(session_id: str, state: _TailorState, extra_context: str | None
         user_content += f"\n\nAdditional info from candidate: {extra_context}"
 
     result, _raw = call_llm_structured(
-        system_prompt=TAILOR_ASSEMBLE_SECTION_PROMPT,
+        system_prompt=TAILOR_ASSEMBLE_SECTION_PROMPT + language_instruction(state.language),
         messages=[{"role": "user", "content": user_content}],
         response_model=TailorSectionOutput,
         prompt_name=f"tailor.assemble.{section_name}",

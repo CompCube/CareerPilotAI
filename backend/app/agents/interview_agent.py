@@ -13,10 +13,15 @@ from app.prompts.interview_prompts import (
     build_interview_initial_message,
     INTERVIEW_SYSTEM_PROMPT,
 )
+from app.prompts.language import language_instruction
 from app.services import session_store
 from app.services.structured_output import call_llm_structured
 
 MAX_TURNS = 5
+
+# Idioma triat per l'usuari, recordat per sessio (com _tailor_states pero
+# nomes cal aquest sol camp aqui -- no calen dataclasses per una cosa).
+_interview_languages: dict[str, str] = {}
 
 
 class InterviewFinishedError(Exception):
@@ -30,8 +35,11 @@ def _count_questions_asked(session_id: str) -> int:
 
 
 def _run_turn(session_id: str) -> InterviewResponse:
+    language = _interview_languages.get(session_id, "en")
+    system_prompt = INTERVIEW_SYSTEM_PROMPT + language_instruction(language)
+
     turn, raw = call_llm_structured(
-        system_prompt=INTERVIEW_SYSTEM_PROMPT,
+        system_prompt=system_prompt,
         messages=session_store.get_history(session_id),
         response_model=InterviewQuestion,
         prompt_name="interview.turn",
@@ -48,8 +56,11 @@ def _run_turn(session_id: str) -> InterviewResponse:
     )
 
 
-def start_interview(cv_text: str, jd_text: str, mode: InterviewMode) -> InterviewResponse:
+def start_interview(
+    cv_text: str, jd_text: str, mode: InterviewMode, language: str = "en"
+) -> InterviewResponse:
     session_id = session_store.create_session()
+    _interview_languages[session_id] = language
     initial_message = build_interview_initial_message(cv_text, jd_text, mode)
     session_store.append_message(session_id, "user", initial_message)
     return _run_turn(session_id)

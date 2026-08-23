@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 import type { TailorSections } from '../api'
+import { FormattedBullets, stripBoldMarkers } from '../utils/formatBullets'
 
 function buildFullResumeText(sections: TailorSections, achievementsLabel: string): string {
   const parts = [
@@ -13,22 +14,30 @@ function buildFullResumeText(sections: TailorSections, achievementsLabel: string
     sections.skills,
     '',
     achievementsLabel.toUpperCase(),
-    sections.achievements,
+    stripBoldMarkers(sections.achievements),
     '',
     'PROFESSIONAL EXPERIENCE',
-    sections.professional_experience,
+    stripBoldMarkers(sections.professional_experience),
   ]
   return parts.filter((p) => p !== undefined).join('\n')
 }
 
-function CopyableCard({ label, content }: { label: string; content: string }) {
+function CopyableCard({
+  label,
+  content,
+  asBullets = false,
+}: {
+  label: string
+  content: string
+  asBullets?: boolean
+}) {
   const { t } = useLanguage()
   const [copied, setCopied] = useState(false)
 
   if (!content) return null
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(content)
+    await navigator.clipboard.writeText(asBullets ? stripBoldMarkers(content) : content)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
@@ -44,7 +53,13 @@ function CopyableCard({ label, content }: { label: string; content: string }) {
           {copied ? t.tailor.copied : t.tailor.copy}
         </button>
       </div>
-      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-paper">{content}</p>
+      {asBullets ? (
+        <div className="mt-2">
+          <FormattedBullets content={content} />
+        </div>
+      ) : (
+        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-paper">{content}</p>
+      )}
     </div>
   )
 }
@@ -92,8 +107,12 @@ export function DoneStage({
         <CopyableCard label={t.tailor.subtitleLabel} content={sections.subtitle} />
         <CopyableCard label={t.tailor.summaryLabel} content={sections.professional_summary} />
         <CopyableCard label={t.tailor.skillsSectionLabel} content={sections.skills} />
-        <CopyableCard label={achievementsLabel} content={sections.achievements} />
-        <CopyableCard label={t.tailor.experienceLabel} content={sections.professional_experience} />
+        <CopyableCard label={achievementsLabel} content={sections.achievements} asBullets />
+        <CopyableCard
+          label={t.tailor.experienceLabel}
+          content={sections.professional_experience}
+          asBullets
+        />
       </div>
 
       <div className="mt-6 rounded-lg border border-panel-border bg-panel p-6">

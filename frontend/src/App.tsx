@@ -79,7 +79,7 @@ function App() {
     try {
       setCvText(cv)
       setJdText(jd)
-      const result = await analyze(cv, jd)
+      const result = await analyze(cv, jd, lang)
       setAnalysis(result)
       setStage('analysis')
     } catch (err) {
@@ -94,7 +94,7 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await startTailor(cvText, jdText, analysis)
+      const result = await startTailor(cvText, jdText, analysis, lang)
       setTailorState(result)
       setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
       setStage('tailor')
@@ -131,7 +131,7 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await startInterview(cvText, jdText, interviewMode)
+      const result = await startInterview(cvText, jdText, interviewMode, lang)
       setInterviewState(result)
       setInterviewHistory([{ question: result.question, answer: null }])
     } catch (err) {
@@ -161,6 +161,16 @@ function App() {
     }
   }
 
+  // Etapes a les quals es pot saltar directament (dades ja disponibles a
+  // l'estat de React -- no cal tornar a cridar l'API per navegar-hi).
+  const reachableStages: Stage[] = [
+    'upload',
+    ...(analysis ? (['analysis'] as Stage[]) : []),
+    ...(tailorState ? (['tailor'] as Stage[]) : []),
+    ...(tailorState?.done ? (['done'] as Stage[]) : []),
+    ...(interviewState ? (['interview'] as Stage[]) : []),
+  ]
+
   return (
     <div className="min-h-screen bg-ink px-6 py-10">
       <div className="mx-auto mb-4 flex max-w-5xl items-center justify-between">
@@ -171,7 +181,12 @@ function App() {
           {t.appName}
         </button>
         <div className="flex items-center gap-4">
-          <StageStepper current={stage} mode={mode} />
+          <StageStepper
+            current={stage}
+            mode={mode}
+            reachable={reachableStages}
+            onNavigate={(target) => setStage(target)}
+          />
           <div className="flex overflow-hidden rounded-full border border-panel-border font-mono text-[10px] uppercase tracking-wider">
             {(['en', 'es'] as Language[]).map((code) => (
               <button

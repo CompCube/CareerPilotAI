@@ -31,9 +31,13 @@ const LABELS: Record<'en' | 'es', Record<Stage, string>> = {
 export function StageStepper({
   current,
   mode,
+  reachable,
+  onNavigate,
 }: {
   current: Stage
   mode: 'apply' | 'interview_practice' | null
+  reachable: Stage[]
+  onNavigate: (stage: Stage) => void
 }) {
   const { lang } = useLanguage()
   if (!mode) return null
@@ -47,15 +51,25 @@ export function StageStepper({
       {keys.map((key, index) => {
         const isDone = index < currentIndex
         const isCurrent = index === currentIndex
+        const isReachable = reachable.includes(key) && !isCurrent
         return (
           <div key={key} className="flex items-center gap-2">
-            <span
-              className={
-                isCurrent ? 'text-accent' : isDone ? 'text-muted' : 'text-panel-border'
-              }
-            >
-              {String(index + 1).padStart(2, '0')} {labels[key]}
-            </span>
+            {isReachable ? (
+              <button
+                onClick={() => onNavigate(key)}
+                className={`transition-colors hover:text-accent ${isDone ? 'text-muted' : 'text-panel-border'}`}
+              >
+                {String(index + 1).padStart(2, '0')} {labels[key]}
+              </button>
+            ) : (
+              <span
+                className={
+                  isCurrent ? 'text-accent' : isDone ? 'text-muted' : 'text-panel-border'
+                }
+              >
+                {String(index + 1).padStart(2, '0')} {labels[key]}
+              </span>
+            )}
             {index < keys.length - 1 && <span className="text-panel-border">/</span>}
           </div>
         )

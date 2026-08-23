@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 import type { TailorResponse } from '../api'
+import { FormattedBullets, stripBoldMarkers } from '../utils/formatBullets'
 
 export type TailorTurn = { agentMessage: string; userReply: string | null }
 
@@ -12,14 +13,22 @@ type Props = {
   isLoading: boolean
 }
 
-function CopyableCard({ label, content }: { label: string; content: string }) {
+function CopyableCard({
+  label,
+  content,
+  asBullets = false,
+}: {
+  label: string
+  content: string
+  asBullets?: boolean
+}) {
   const { t } = useLanguage()
   const [copied, setCopied] = useState(false)
 
   if (!content) return null
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(content)
+    await navigator.clipboard.writeText(asBullets ? stripBoldMarkers(content) : content)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
@@ -35,7 +44,13 @@ function CopyableCard({ label, content }: { label: string; content: string }) {
           {copied ? t.tailor.copied : t.tailor.copy}
         </button>
       </div>
-      <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-paper">{content}</p>
+      {asBullets ? (
+        <div className="mt-2">
+          <FormattedBullets content={content} />
+        </div>
+      ) : (
+        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-paper">{content}</p>
+      )}
     </div>
   )
 }
@@ -57,9 +72,9 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
       <h1 className="font-display text-4xl font-semibold text-paper">{t.tailor.heading}</h1>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* --- Esquerra: xat --- */}
-        <div>
-          <div className="space-y-4">
+        {/* --- Esquerra: xat, amb scroll propi (no fa scroll tota la pagina) --- */}
+        <div className="flex flex-col">
+          <div className="max-h-[65vh] space-y-4 overflow-y-auto rounded-lg border border-panel-border bg-ink/40 p-3">
             {history.map((turn, i) => (
               <div key={i}>
                 <div className="rounded-lg border border-panel-border bg-panel px-4 py-3.5">
@@ -116,7 +131,7 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
         </div>
 
         {/* --- Dreta: panells que es van omplint --- */}
-        <div className="space-y-3">
+        <div className="max-h-[80vh] space-y-3 overflow-y-auto pr-1">
           {tailorState.top_keywords.length > 0 && (
             <div className="rounded-lg border border-panel-border bg-panel p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
@@ -163,11 +178,13 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
                   {tailorState.ats_score}
                 </span>
               </div>
+              {/* Nota: partial (ambre), NO gap (vermell) -- son consells
+                  estructurals constructius, no errors trencats de l'app. */}
               {tailorState.ats_issues.length > 0 && (
                 <ul className="mt-2 space-y-1.5">
                   {tailorState.ats_issues.map((issue, i) => (
                     <li key={i} className="text-xs text-muted">
-                      <span className="text-gap">{issue.issue}</span> — {issue.fix}
+                      <span className="font-medium text-partial">{issue.issue}</span> — {issue.fix}
                     </li>
                   ))}
                 </ul>
@@ -190,8 +207,12 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
           <CopyableCard label={t.tailor.subtitleLabel} content={sections.subtitle} />
           <CopyableCard label={t.tailor.summaryLabel} content={sections.professional_summary} />
           <CopyableCard label={t.tailor.skillsSectionLabel} content={sections.skills} />
-          <CopyableCard label={achievementsLabel} content={sections.achievements} />
-          <CopyableCard label={t.tailor.experienceLabel} content={sections.professional_experience} />
+          <CopyableCard label={achievementsLabel} content={sections.achievements} asBullets />
+          <CopyableCard
+            label={t.tailor.experienceLabel}
+            content={sections.professional_experience}
+            asBullets
+          />
         </div>
       </div>
     </div>

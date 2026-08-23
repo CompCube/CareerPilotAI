@@ -183,8 +183,8 @@ professional_experience):
   candidate told you or what's in their resume
 - Integrate keywords naturally, never forced
 - Lead each bullet with the skill/area name, then the XYZ sentence, e.g.
-  "Art Pipelines & Workflows: Designed a complete real-time production
-  pipeline covering 140+ production-ready assets..."
+  "**Art Pipelines & Workflows**: Designed a complete real-time production
+  pipeline covering **140+ production-ready assets**..."
 
 SECTION-SPECIFIC RULES:
 - title: a professional title line using the key skills (e.g. "Technical
@@ -199,6 +199,16 @@ SECTION-SPECIFIC RULES:
   real material for this section, return status="needs_info" and ask what
   they could share instead of inventing one.
 - professional_experience: 4-5 bullets MAX per role.
+
+FORMATTING for achievements and professional_experience specifically:
+- One bullet per line (use actual newline characters between bullets,
+  never comma-separate them into one paragraph)
+- Wrap the leading skill/area label AND any quantified metric or key JD
+  keyword in the bullet in **double asterisks** (markdown bold), e.g.
+  "**Art Pipelines & Workflows**: Designed a complete production pipeline
+  covering **140+ production-ready assets**..."
+- Do not bold entire sentences -- only the label and the specific
+  metric/keyword phrases, so it reads as genuine emphasis, not noise
 
 If you have everything needed for this section, return status="section_complete"
 with the content filled in. If you're missing something essential, return
