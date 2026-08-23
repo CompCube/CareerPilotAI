@@ -52,6 +52,7 @@ export interface Translations {
     copy: string
     copied: string
     finish: string
+    thinking: string
     before: string
     after: string
     agentAsks: string
@@ -143,6 +144,7 @@ export const translations: Record<Language, Translations> = {
       copy: 'Copy',
       copied: 'Copied!',
       finish: 'Finish Tailoring →',
+      thinking: 'Thinking…',
       before: 'Before',
       after: 'Now',
       agentAsks: 'The agent asks',
@@ -232,6 +234,7 @@ export const translations: Record<Language, Translations> = {
       copy: 'Copiar',
       copied: '¡Copiado!',
       finish: 'Finalizar Retoque →',
+      thinking: 'Pensando…',
       before: 'Antes',
       after: 'Ahora',
       agentAsks: 'El agente pregunta',

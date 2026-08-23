@@ -62,7 +62,7 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
 
   useEffect(() => {
     chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: 'smooth' })
-  }, [history])
+  }, [history, isLoading])
 
   const { sections } = tailorState
   const achievementsLabel =
@@ -100,6 +100,18 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
                 )}
               </div>
             ))}
+            {isLoading && (
+              <div className="rounded-lg border border-panel-border bg-panel px-4 py-3.5">
+                <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+                  {t.tailor.thinking}
+                </p>
+                <div className="mt-2.5 flex gap-1.5">
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-accent" />
+                </div>
+              </div>
+            )}
           </div>
 
           {canReply && (
