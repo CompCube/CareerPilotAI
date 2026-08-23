@@ -90,6 +90,10 @@ export interface Translations {
   errors: {
     generic: string
   }
+  footer: {
+    copyright: string
+    viewSource: string
+  }
 }
 
 export const translations: Record<Language, Translations> = {
@@ -183,6 +187,10 @@ export const translations: Record<Language, Translations> = {
     errors: {
       generic: 'Could not connect to the server.',
     },
+    footer: {
+      copyright: '© 2026 CareerPilot AI — portfolio project',
+      viewSource: 'View source ↗',
+    },
   },
   es: {
     appName: 'CareerPilot AI',
@@ -273,6 +281,10 @@ export const translations: Record<Language, Translations> = {
     },
     errors: {
       generic: 'No se ha podido conectar con el servidor.',
+    },
+    footer: {
+      copyright: '© 2026 CareerPilot AI — proyecto de portfolio',
+      viewSource: 'Ver código ↗',
     },
   },
 }

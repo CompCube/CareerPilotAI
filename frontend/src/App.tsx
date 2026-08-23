@@ -172,37 +172,40 @@ function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-ink px-6 py-10">
-      <div className="mx-auto mb-4 flex max-w-5xl items-center justify-between">
-        <button
-          onClick={resetToMenu}
-          className="font-display text-lg font-semibold text-paper transition-opacity hover:opacity-80"
-        >
-          {t.appName}
-        </button>
-        <div className="flex items-center gap-4">
-          <StageStepper
-            current={stage}
-            mode={mode}
-            reachable={reachableStages}
-            onNavigate={(target) => setStage(target)}
-          />
-          <div className="flex overflow-hidden rounded-full border border-panel-border font-mono text-[10px] uppercase tracking-wider">
-            {(['en', 'es'] as Language[]).map((code) => (
-              <button
-                key={code}
-                onClick={() => setLang(code)}
-                className={`px-2.5 py-1 transition-colors ${
-                  lang === code ? 'bg-accent text-ink' : 'text-muted hover:text-paper'
-                }`}
-              >
-                {code.toUpperCase()}
-              </button>
-            ))}
+    <div className="flex min-h-screen flex-col bg-ink">
+      <header className="w-full border-b border-panel-border bg-panel/40">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <button
+            onClick={resetToMenu}
+            className="font-display text-lg font-semibold text-paper transition-opacity hover:opacity-80"
+          >
+            {t.appName}
+          </button>
+          <div className="flex items-center gap-4">
+            <StageStepper
+              current={stage}
+              mode={mode}
+              reachable={reachableStages}
+              onNavigate={(target) => setStage(target)}
+            />
+            <div className="flex overflow-hidden rounded-full border border-panel-border font-mono text-[10px] uppercase tracking-wider">
+              {(['en', 'es'] as Language[]).map((code) => (
+                <button
+                  key={code}
+                  onClick={() => setLang(code)}
+                  className={`px-2.5 py-1 transition-colors ${
+                    lang === code ? 'bg-accent text-ink' : 'text-muted hover:text-paper'
+                  }`}
+                >
+                  {code.toUpperCase()}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
+      <main className="flex-1 px-6 py-10">
       {stage !== 'mode' && (
         <div className="mx-auto mb-6 max-w-5xl">
           <button
@@ -262,6 +265,21 @@ function App() {
           isLoading={isLoading}
         />
       )}
+      </main>
+
+      <footer className="w-full border-t border-panel-border bg-panel/40">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-6 py-5 font-mono text-xs text-muted">
+          <span>{t.footer.copyright}</span>
+          <a
+            href="https://github.com/CompCube/CareerPilotAI"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-accent"
+          >
+            {t.footer.viewSource}
+          </a>
+        </div>
+      </footer>
     </div>
   )
 }
