@@ -110,10 +110,11 @@ export function analyze(cvText: string, jdText: string, lang: string): Promise<A
 export function startTailor(
   cvText: string,
   jdText: string,
-  analysis: AnalyzeResponse,
+  analysis: AnalyzeResponse | null,
   lang: string,
+  fast: boolean = false,
 ): Promise<TailorResponse> {
-  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis, language: lang })
+  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis, language: lang, fast })
 }
 
 export function continueTailor(sessionId: string, userMessage: string): Promise<TailorResponse> {

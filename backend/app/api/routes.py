@@ -77,19 +77,25 @@ async def analyze(request: Request, payload: AnalyzeRequest) -> AnalyzeResponse:
 async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
     """
     Conversacional, 4 fases (extract -> interrogate -> deepen -> assemble).
-    Omet session_id per iniciar (cv_text, jd_text i analysis obligatoris),
-    inclou-lo + user_message per continuar.
+    Omet session_id per iniciar (cv_text i jd_text sempre obligatoris;
+    analysis obligatori nomes si fast=False), inclou-lo + user_message
+    per continuar.
     """
     try:
         if payload.session_id is None:
-            if not payload.cv_text or not payload.jd_text or not payload.analysis:
+            if not payload.cv_text or not payload.jd_text:
                 raise HTTPException(
                     status_code=400,
-                    detail="cv_text, jd_text and analysis are required to start a new Tailor session.",
+                    detail="cv_text and jd_text are required to start a new Tailor session.",
+                )
+            if not payload.fast and not payload.analysis:
+                raise HTTPException(
+                    status_code=400,
+                    detail="analysis is required to start a new Tailor session unless fast=true.",
                 )
             return start_tailor_session(
                 cv_text=payload.cv_text, jd_text=payload.jd_text, analysis=payload.analysis,
-                language=payload.language,
+                language=payload.language, fast=payload.fast,
             )
 
         if not payload.user_message:

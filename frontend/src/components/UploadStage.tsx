@@ -4,6 +4,7 @@ import { extractPdfText, ApiError } from '../api'
 
 type Props = {
   onSubmit: (cvText: string, jdText: string) => void
+  onQuickTailor?: (cvText: string, jdText: string) => void
   isLoading: boolean
   error: string | null
   submitLabel?: string
@@ -70,7 +71,7 @@ function PdfUploadButton({
   )
 }
 
-export function UploadStage({ onSubmit, isLoading, error, submitLabel }: Props) {
+export function UploadStage({ onSubmit, onQuickTailor, isLoading, error, submitLabel }: Props) {
   const { t } = useLanguage()
   const [cvText, setCvText] = useState('')
   const [jdText, setJdText] = useState('')
@@ -122,7 +123,7 @@ export function UploadStage({ onSubmit, isLoading, error, submitLabel }: Props) 
         </p>
       )}
 
-      <div className="mt-6 flex justify-center">
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
         <button
           onClick={() => onSubmit(cvText, jdText)}
           disabled={!canSubmit}
@@ -130,6 +131,15 @@ export function UploadStage({ onSubmit, isLoading, error, submitLabel }: Props) 
         >
           {isLoading ? t.upload.submitLoading : submitLabel || t.upload.submitIdle}
         </button>
+        {onQuickTailor && (
+          <button
+            onClick={() => onQuickTailor(cvText, jdText)}
+            disabled={!canSubmit}
+            className="rounded-md border border-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-accent transition-colors disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-accent/10"
+          >
+            {t.upload.quickTailor}
+          </button>
+        )}
       </div>
     </div>
   )

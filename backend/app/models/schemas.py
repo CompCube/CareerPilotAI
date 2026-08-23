@@ -81,6 +81,10 @@ class TailorRequest(BaseModel):
         None, description="Resposta de l'usuari a una pregunta de l'agent"
     )
     language: Literal["en", "es"] = "en"
+    fast: bool = Field(
+        False,
+        description="Salta Interrogate i Deepen, va directe d'Extract a Assemble",
+    )
 
 
 class ATSIssue(BaseModel):

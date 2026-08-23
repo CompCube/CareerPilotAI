@@ -178,9 +178,47 @@ def test_unknown_session_raises_keyerror():
     print("OK  test_unknown_session_raises_keyerror")
 
 
+def test_fast_mode_skips_interrogate_and_deepen_entirely():
+    """The whole point of fast=True: only extract + assemble calls happen,
+    zero interrogate/deepen calls, no analysis needed at all."""
+    call_sequence = [
+        EXTRACT_RESPONSE,
+        ASSEMBLE_START_RESPONSE,
+        SECTION_COMPLETE("t"), SECTION_COMPLETE("s"), SECTION_COMPLETE("p"),
+        SECTION_COMPLETE("sk"), SECTION_COMPLETE("a"), SECTION_COMPLETE("e"),
+    ]
+
+    with patch("app.services.structured_output.call_llm", side_effect=call_sequence) as mock_call:
+        result = start_tailor_session(
+            cv_text="CV " * 10, jd_text="JD " * 10, analysis=None, fast=True
+        )
+        assert result.phase == "complete"
+        assert result.done is True
+        assert result.top_keywords == ["Unity", "Shader Graph", "C#", "Pipeline"]
+        assert result.sections.title == "t"
+        # Exactamente 8 crides: 1 extract + 1 assemble_start + 6 seccions.
+        # Cap crida d'interrogate/deepen -- confirma que s'han saltat del tot.
+        assert mock_call.call_count == 8
+
+    print("OK  test_fast_mode_skips_interrogate_and_deepen_entirely")
+
+
+def test_non_fast_mode_without_analysis_raises_clean_error():
+    """Sense fast=True, l'Interrogate necessita competencies -- ha de fallar
+    net, no petar amb un AttributeError confús sobre analysis=None."""
+    try:
+        start_tailor_session(cv_text="CV " * 10, jd_text="JD " * 10, analysis=None, fast=False)
+        raise AssertionError("Should have raised ValueError")
+    except ValueError as exc:
+        assert "fast=False" in str(exc)
+    print("OK  test_non_fast_mode_without_analysis_raises_clean_error")
+
+
 if __name__ == "__main__":
     test_clarification_does_not_advance_but_real_answer_does()
     test_full_flow_extract_through_complete()
     test_max_deepen_cap_forces_assemble()
     test_unknown_session_raises_keyerror()
+    test_fast_mode_skips_interrogate_and_deepen_entirely()
+    test_non_fast_mode_without_analysis_raises_clean_error()
     print("\nAll Tailor v2 tests passed.")

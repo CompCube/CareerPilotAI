@@ -91,6 +91,25 @@ function App() {
     }
   }
 
+  async function handleQuickTailor(cv: string, jd: string) {
+    setIsLoading(true)
+    setError(null)
+    try {
+      setCvText(cv)
+      setJdText(jd)
+      // Salta /analyze del tot -- el camp rapid del Tailor no el necessita
+      // (Extract fa la seva propia extraccio de keywords/ATS, independent).
+      const result = await startTailor(cv, jd, null, lang, true)
+      setTailorState(result)
+      setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
+      setStage('tailor')
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   async function handleStartTailor() {
     if (!analysis) return
     setIsLoading(true)
@@ -222,7 +241,12 @@ function App() {
       {stage === 'mode' && <ModeSelect onSelect={handleModeSelect} />}
 
       {stage === 'upload' && mode === 'apply' && (
-        <UploadStage onSubmit={handleAnalyze} isLoading={isLoading} error={error} />
+        <UploadStage
+          onSubmit={handleAnalyze}
+          onQuickTailor={handleQuickTailor}
+          isLoading={isLoading}
+          error={error}
+        />
       )}
 
       {stage === 'upload' && mode === 'interview_practice' && (

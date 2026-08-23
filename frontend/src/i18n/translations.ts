@@ -20,6 +20,7 @@ export interface Translations {
     jdLabel: string
     jdPlaceholder: string
     submitIdle: string
+    quickTailor: string
     submitLoading: string
     submitInterview: string
     orUploadPdf: string
@@ -122,7 +123,8 @@ export const translations: Record<Language, Translations> = {
       cvPlaceholder: 'Paste your resume text here...',
       jdLabel: 'Job offer',
       jdPlaceholder: 'Paste the job description text here...',
-      submitIdle: 'Analyze fit',
+      submitIdle: 'Analyze Fit & Tailor Resume',
+      quickTailor: 'Tailor Resume Directly',
       submitLoading: 'Analyzing…',
       submitInterview: 'Start interview',
       orUploadPdf: 'or upload PDF',
@@ -238,7 +240,8 @@ export const translations: Record<Language, Translations> = {
       cvPlaceholder: 'Pega aquí el texto de tu currículum...',
       jdLabel: 'Oferta de trabajo',
       jdPlaceholder: 'Pega aquí el texto de la oferta...',
-      submitIdle: 'Analiza el encaje',
+      submitIdle: 'Analizar encaje y retocar CV',
+      quickTailor: 'Retocar CV directamente',
       submitLoading: 'Analizando…',
       submitInterview: 'Empezar entrevista',
       orUploadPdf: 'o sube un PDF',

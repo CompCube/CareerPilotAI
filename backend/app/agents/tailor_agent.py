@@ -99,10 +99,21 @@ def _build_response(state: _TailorState, session_id: str, agent_message: str, do
 
 
 def start_tailor_session(
-    cv_text: str, jd_text: str, analysis: AnalyzeResponse, language: str = "en"
+    cv_text: str,
+    jd_text: str,
+    analysis: AnalyzeResponse | None = None,
+    language: str = "en",
+    fast: bool = False,
 ) -> TailorResponse:
     session_id = session_store.create_session()
-    sorted_competencies = sorted(analysis.competencies, key=lambda c: c.priority)
+    sorted_competencies = (
+        sorted(analysis.competencies, key=lambda c: c.priority) if analysis else []
+    )
+    if not fast and not sorted_competencies:
+        raise ValueError(
+            "analysis with competencies is required when fast=False "
+            "(Interrogate phase needs a list to walk through)."
+        )
     state = _TailorState(
         cv_text=cv_text, jd_text=jd_text, competencies=sorted_competencies, language=language
     )
@@ -119,6 +130,12 @@ def start_tailor_session(
     state.key_skills = extract_result.key_skills
     state.ats_score = extract_result.ats_score
     state.ats_issues = extract_result.ats_issues
+
+    if fast:
+        # Camp rapid: salta Interrogate i Deepen del tot, directe a Assemble.
+        # L'agent treballa nomes amb el que ja hi ha al CV -- mai inventa,
+        # simplement no enriqueix amb preguntes de seguiment.
+        return _start_assemble(session_id, state)
 
     state.phase = "interrogate"
     if not state.competencies:
