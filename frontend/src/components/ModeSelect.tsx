@@ -6,7 +6,7 @@ export function ModeSelect({ onSelect }: { onSelect: (mode: AppMode) => void }) 
   const { t } = useLanguage()
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-5xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.appName}</h1>
       <p className="mt-2 text-muted">{t.mode.subheading}</p>
 

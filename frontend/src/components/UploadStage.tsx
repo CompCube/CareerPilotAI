@@ -79,7 +79,7 @@ export function UploadStage({ onSubmit, isLoading, error, submitLabel }: Props) 
   const canSubmit = cvText.trim().length > 20 && jdText.trim().length > 20 && !isLoading
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.upload.heading}</h1>
       <p className="mt-2 text-muted">{t.upload.subheading}</p>
 
