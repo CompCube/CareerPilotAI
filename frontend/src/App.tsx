@@ -102,7 +102,11 @@ function App() {
       const result = await startTailor(cv, jd, null, lang, true)
       setTailorState(result)
       setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
-      setStage('tailor')
+      // El cami rapid normalment acaba fet d'un sol cop (done=true) -- si es
+      // aixi, salta directament a Ready, no te sentit passar per la pantalla
+      // del xat sense conversa a mostrar. Nomes cau a 'tailor' si per algun
+      // motiu ha fet falta preguntar (needs_info, cas rar de seguretat).
+      setStage(result.done ? 'done' : 'tailor')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
