@@ -86,7 +86,7 @@ export function DoneStage({
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <div className="inline-block rounded-full border border-match/40 bg-match/10 px-4 py-1 font-mono text-[10px] uppercase tracking-wider text-match">
         {t.done.badge}
       </div>

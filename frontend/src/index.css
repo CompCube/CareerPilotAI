@@ -3,9 +3,9 @@
 
 @theme {
   /* --- Paleta: terminal fosc / electric blue --- */
-  --color-ink: #17171c;        /* fons fosc, tint minim -- ni negre pur ni blavos */
-  --color-panel: #202027;      /* targetes / superficies */
-  --color-panel-border: #34343e;
+  --color-ink: #1e1e24;        /* fons fosc, tint minim -- ni negre pur ni blavos */
+  --color-panel: #27272f;      /* targetes / superficies */
+  --color-panel-border: #3c3c47;
   --color-paper: #e7ecf3;      /* text principal, blanc fred */
   --color-muted: #94a3b8;      /* text secundari */
   --color-accent: #38bdf8;     /* blau electric -- nomes per a moments clau */

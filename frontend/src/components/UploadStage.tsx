@@ -79,7 +79,7 @@ export function UploadStage({ onSubmit, isLoading, error, submitLabel }: Props) 
   const canSubmit = cvText.trim().length > 20 && jdText.trim().length > 20 && !isLoading
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.upload.heading}</h1>
       <p className="mt-2 text-muted">{t.upload.subheading}</p>
 
@@ -122,13 +122,15 @@ export function UploadStage({ onSubmit, isLoading, error, submitLabel }: Props) 
         </p>
       )}
 
-      <button
-        onClick={() => onSubmit(cvText, jdText)}
-        disabled={!canSubmit}
-        className="mt-6 rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:opacity-90"
-      >
-        {isLoading ? t.upload.submitLoading : submitLabel || t.upload.submitIdle}
-      </button>
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={() => onSubmit(cvText, jdText)}
+          disabled={!canSubmit}
+          className="rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:opacity-90"
+        >
+          {isLoading ? t.upload.submitLoading : submitLabel || t.upload.submitIdle}
+        </button>
+      </div>
     </div>
   )
 }

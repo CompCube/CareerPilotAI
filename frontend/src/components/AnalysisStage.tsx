@@ -24,8 +24,8 @@ export function AnalysisStage({
   const sorted = [...analysis.competencies].sort((a, b) => a.priority - b.priority)
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="flex items-start justify-between gap-8">
+    <div className="mx-auto max-w-6xl">
+      <div className="flex items-center justify-between gap-8">
         <h1 className="font-display text-4xl font-semibold text-paper">{t.analysis.heading}</h1>
 
         <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center rounded-full border-2 border-accent font-display text-3xl font-semibold text-accent">
@@ -82,12 +82,14 @@ export function AnalysisStage({
         ))}
       </div>
 
-      <button
-        onClick={onContinue}
-        className="mt-8 rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
-      >
-        {t.analysis.continue}
-      </button>
+      <div className="mt-8 flex justify-center">
+        <button
+          onClick={onContinue}
+          className="rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
+        >
+          {t.analysis.continue}
+        </button>
+      </div>
     </div>
   )
 }

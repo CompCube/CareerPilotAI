@@ -35,7 +35,7 @@ export function InterviewStage({
 
   if (!interviewState) {
     return (
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <h1 className="font-display text-4xl font-semibold text-paper">{t.interview.heading}</h1>
         <p className="mt-2 text-muted">{t.interview.subheading}</p>
 
@@ -67,7 +67,7 @@ export function InterviewStage({
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-4xl font-semibold text-paper">{t.interview.heading}</h1>
         <span className="font-mono text-xs uppercase tracking-wider text-muted">

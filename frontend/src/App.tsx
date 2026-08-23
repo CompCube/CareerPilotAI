@@ -209,7 +209,7 @@ function App() {
 
       <main className="flex-1 px-6 py-10">
       {stage !== 'mode' && (
-        <div className="mx-auto mb-6 max-w-5xl">
+        <div className="mx-auto mb-6 max-w-6xl">
           <button
             onClick={resetToMenu}
             className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-accent"
@@ -270,7 +270,7 @@ function App() {
       </main>
 
       <footer className="w-full border-t border-panel-border bg-panel/40">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-5 font-mono text-xs text-muted">
+        <div className="flex w-full flex-wrap items-center justify-between gap-4 px-6 py-5 font-mono text-xs text-muted lg:px-12">
           <span>{t.footer.copyright}</span>
           <div className="flex items-center gap-5">
             <button onClick={() => setLegalModal('privacy')} className="transition-colors hover:text-accent">

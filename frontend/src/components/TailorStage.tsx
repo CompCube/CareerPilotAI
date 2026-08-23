@@ -73,7 +73,7 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
   const canReply = !tailorState.done && !isLoading
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.tailor.heading}</h1>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
