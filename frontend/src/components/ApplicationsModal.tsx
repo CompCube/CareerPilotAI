@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
-import { listApplications, getApplication, ApiError, type ApplicationSummary, type ApplicationDetail } from '../api'
+import {
+  listApplications,
+  getApplication,
+  deleteApplication,
+  toggleApplied,
+  ApiError,
+  type ApplicationSummary,
+  type ApplicationDetail,
+} from '../api'
 import { FormattedBullets } from '../utils/formatBullets'
 
 function DetailSection({ label, content }: { label: string; content: string }) {
@@ -47,6 +55,27 @@ export function ApplicationsModal({
     }
   }
 
+  async function handleDelete(id: number) {
+    try {
+      await deleteApplication(token, id)
+      setApplications((prev) => prev.filter((a) => a.id !== id))
+      if (selected?.id === id) setSelected(null)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
+    }
+  }
+
+  async function handleToggleApplied() {
+    if (!selected) return
+    try {
+      const updated = await toggleApplied(token, selected.id)
+      setSelected({ ...selected, applied: updated.applied })
+      setApplications((prev) => prev.map((a) => (a.id === updated.id ? { ...a, applied: updated.applied } : a)))
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
+    }
+  }
+
   const topCompetencies = selected?.analysis
     ? [...selected.analysis.competencies].sort((a, b) => a.priority - b.priority).slice(0, 5)
     : []
@@ -72,12 +101,30 @@ export function ApplicationsModal({
 
         {selected ? (
           <div className="mt-4">
-            <button
-              onClick={() => setSelected(null)}
-              className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-accent"
-            >
-              {t.auth.backToList}
-            </button>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setSelected(null)}
+                className="font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:text-accent"
+              >
+                {t.auth.backToList}
+              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleToggleApplied}
+                  className={`font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                    selected.applied ? 'text-match' : 'text-muted hover:text-accent'
+                  }`}
+                >
+                  {selected.applied ? t.auth.markedApplied : t.auth.markAsApplied}
+                </button>
+                <button
+                  onClick={() => handleDelete(selected.id)}
+                  className="font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-gap"
+                >
+                  {t.auth.deleteApplication}
+                </button>
+              </div>
+            </div>
 
             {selected.analysis && (
               <>
@@ -151,16 +198,26 @@ export function ApplicationsModal({
         ) : (
           <div className="mt-4 space-y-2">
             {applications.map((a) => (
-              <button
+              <div
                 key={a.id}
-                onClick={() => openDetail(a.id)}
-                className="block w-full rounded-md border border-panel-border bg-ink px-4 py-3 text-left transition-colors hover:border-accent"
+                className="flex items-center gap-2 rounded-md border border-panel-border bg-ink px-4 py-3 transition-colors hover:border-accent"
               >
-                <p className="text-sm text-paper">{a.title}</p>
-                <p className="mt-0.5 font-mono text-[10px] text-muted">
-                  {new Date(a.created_at).toLocaleDateString()}
-                </p>
-              </button>
+                <button onClick={() => openDetail(a.id)} className="min-w-0 flex-1 text-left">
+                  <p className="truncate text-sm text-paper">
+                    {a.applied && <span className="mr-1.5 text-match">✓</span>}
+                    {a.title}
+                  </p>
+                  <p className="mt-0.5 font-mono text-[10px] text-muted">
+                    {new Date(a.created_at).toLocaleDateString()}
+                  </p>
+                </button>
+                <button
+                  onClick={() => handleDelete(a.id)}
+                  className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-gap"
+                >
+                  {t.auth.deleteApplication}
+                </button>
+              </div>
             ))}
           </div>
         )}

@@ -44,12 +44,29 @@ def update_profile(
     return ProfileOut(base_cv_text=payload.base_cv_text)
 
 
+MAX_APPLICATIONS_PER_USER = 20
+
+
 @router.post("/applications", response_model=ApplicationSummary)
 def create_application(
     payload: ApplicationCreateRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ApplicationSummary:
+    # Limit per usuari -- si ja n'hi ha 20, esborra la mes antiga abans de
+    # crear-ne una de nova. Silenciós (auto-desat en segon pla, l'usuari
+    # no ho decideix explicitament) -- millor podar que rebutjar.
+    existing_count = db.query(Application).filter(Application.user_id == current_user.id).count()
+    if existing_count >= MAX_APPLICATIONS_PER_USER:
+        oldest = (
+            db.query(Application)
+            .filter(Application.user_id == current_user.id)
+            .order_by(Application.created_at.asc())
+            .first()
+        )
+        if oldest is not None:
+            db.delete(oldest)
+
     application = Application(
         user_id=current_user.id,
         title=payload.title,
@@ -112,6 +129,47 @@ def get_application(
         tailor_sections=TailorSections.model_validate_json(application.tailor_sections_json)
         if application.tailor_sections_json
         else None,
+        applied=application.applied,
+        created_at=application.created_at.isoformat(),
+    )
+
+
+@router.delete("/applications/{application_id}")
+def delete_application(
+    application_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    application = (
+        db.query(Application)
+        .filter(Application.id == application_id, Application.user_id == current_user.id)
+        .first()
+    )
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    db.delete(application)
+    db.commit()
+    return {"deleted": True}
+
+
+@router.patch("/applications/{application_id}", response_model=ApplicationSummary)
+def toggle_applied(
+    application_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ApplicationSummary:
+    application = (
+        db.query(Application)
+        .filter(Application.id == application_id, Application.user_id == current_user.id)
+        .first()
+    )
+    if application is None:
+        raise HTTPException(status_code=404, detail="Application not found.")
+    application.applied = not application.applied
+    db.commit()
+    return ApplicationSummary(
+        id=application.id,
+        title=application.title,
         applied=application.applied,
         created_at=application.created_at.isoformat(),
     )

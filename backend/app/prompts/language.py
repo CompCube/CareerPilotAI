@@ -37,8 +37,15 @@ WRITING STYLE -- avoid sounding like AI-generated text:
 def language_instruction(language: str) -> str:
     name = LANGUAGE_NAMES.get(language, "English")
     return (
-        f"\n\nIMPORTANT: Write all natural-language text content (every string "
-        f"value, not the JSON keys) in {name}. This applies to every text "
-        f"field in your response, no exceptions."
+        f"\n\n=== OUTPUT LANGUAGE: {name.upper()} ===\n"
+        f"Every piece of natural-language text you generate in this response "
+        f"(every string value, not the JSON keys) MUST be written in {name}. "
+        f"This is non-negotiable and applies no matter what language any "
+        f"example, sample bullet, or template text shown earlier in this "
+        f"prompt happens to be written in -- those examples only show "
+        f"FORMAT and STRUCTURE, never copy their language. If you find "
+        f"yourself about to write English while your target language is "
+        f"{name}, stop and translate it. Write in {name}, not English, "
+        f"unless {name} literally is English."
         + ANTI_AI_VOICE_INSTRUCTION
     )

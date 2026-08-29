@@ -24,6 +24,7 @@ export interface Translations {
     submitLoading: string
     submitInterview: string
     orUploadPdf: string
+    removeFile: string
     extracting: string
   }
   analysis: {
@@ -107,8 +108,12 @@ export interface Translations {
     backToList: string
     noApplicationsYet: string
     useBaseCv: string
+    useLastApplication: string
     topSkillsLabel: string
     prepareInterviewForThis: string
+    markAsApplied: string
+    markedApplied: string
+    deleteApplication: string
   }
   footer: {
     copyright: string
@@ -147,6 +152,7 @@ export const translations: Record<Language, Translations> = {
       submitLoading: 'Analyzing…',
       submitInterview: 'Start interview',
       orUploadPdf: 'or upload PDF',
+      removeFile: 'Remove',
       extracting: 'Extracting…',
     },
     analysis: {
@@ -230,8 +236,12 @@ export const translations: Record<Language, Translations> = {
       backToList: '← Back to list',
       noApplicationsYet: "No applications saved yet -- they'll show up here once you finish tailoring one while signed in.",
       useBaseCv: 'Use my base resume',
+      useLastApplication: 'Use my last application',
       topSkillsLabel: 'Top skills they were looking for',
       prepareInterviewForThis: 'Prepare Interview for this application →',
+      markAsApplied: 'Mark as applied',
+      markedApplied: '✓ Applied',
+      deleteApplication: 'Delete',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — portfolio project',
@@ -283,6 +293,7 @@ export const translations: Record<Language, Translations> = {
       submitLoading: 'Analizando…',
       submitInterview: 'Empezar entrevista',
       orUploadPdf: 'o sube un PDF',
+      removeFile: 'Quitar',
       extracting: 'Extrayendo…',
     },
     analysis: {
@@ -366,8 +377,12 @@ export const translations: Record<Language, Translations> = {
       backToList: '← Volver a la lista',
       noApplicationsYet: 'Aún no tienes candidaturas guardadas -- aparecerán aquí cuando termines de retocar una estando conectado.',
       useBaseCv: 'Usar mi currículum base',
+      useLastApplication: 'Usar mi última candidatura',
       topSkillsLabel: 'Skills principales que buscaban',
       prepareInterviewForThis: 'Preparar entrevista para esta candidatura →',
+      markAsApplied: 'Marcar como enviada',
+      markedApplied: '✓ Enviada',
+      deleteApplication: 'Eliminar',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — proyecto de portfolio',

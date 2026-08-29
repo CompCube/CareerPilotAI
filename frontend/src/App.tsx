@@ -9,6 +9,8 @@ import {
   getMe,
   getProfile,
   createApplication,
+  listApplications,
+  getApplication,
   ApiError,
   type AnalyzeResponse,
   type InterviewMode,
@@ -46,6 +48,7 @@ function App() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showApplicationsModal, setShowApplicationsModal] = useState(false)
   const [profileCv, setProfileCv] = useState<string | null>(null)
+  const [lastApplication, setLastApplication] = useState<{ cvText: string; jdText: string } | null>(null)
 
   useEffect(() => {
     if (!authToken) {
@@ -55,6 +58,22 @@ function App() {
     getProfile(authToken)
       .then((p) => setProfileCv(p.base_cv_text))
       .catch(() => setProfileCv(null))
+  }, [authToken])
+
+  useEffect(() => {
+    if (!authToken) {
+      setLastApplication(null)
+      return
+    }
+    listApplications(authToken)
+      .then((apps) => {
+        if (apps.length === 0) return null
+        return getApplication(authToken, apps[0].id) // ja venen ordenades per data desc
+      })
+      .then((detail) => {
+        if (detail) setLastApplication({ cvText: detail.cv_text_used, jdText: detail.jd_text })
+      })
+      .catch(() => setLastApplication(null))
   }, [authToken])
 
   useEffect(() => {
@@ -170,7 +189,9 @@ function App() {
       cv_text_used: cvUsed,
       analysis: analysisData,
       tailor_sections: sections,
-    }).catch(() => {
+    })
+      .then(() => setLastApplication({ cvText: cvUsed, jdText: jd }))
+      .catch(() => {
       // Fire-and-forget -- no interrompem el flux de l'usuari si el
       // guardat falla, nomes es perd l'historial d'aquesta sessio concreta.
     })
@@ -374,6 +395,7 @@ function App() {
           isLoading={isLoading}
           error={error}
           baseCvText={profileCv}
+          lastApplication={lastApplication}
         />
       )}
 

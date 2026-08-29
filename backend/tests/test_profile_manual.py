@@ -113,10 +113,69 @@ def test_profile_and_applications_require_auth():
     print("OK  test_profile_and_applications_require_auth")
 
 
+def test_delete_application():
+    headers = get_auth_header()
+    created = client.post(
+        "/applications", json={"title": "To delete", "jd_text": "x", "cv_text_used": "y"}, headers=headers
+    )
+    app_id = created.json()["id"]
+
+    delete_response = client.delete(f"/applications/{app_id}", headers=headers)
+    assert delete_response.status_code == 200
+
+    get_response = client.get(f"/applications/{app_id}", headers=headers)
+    assert get_response.status_code == 404
+    print("OK  test_delete_application")
+
+
+def test_toggle_applied():
+    headers = get_auth_header()
+    created = client.post(
+        "/applications", json={"title": "Toggle me", "jd_text": "x", "cv_text_used": "y"}, headers=headers
+    )
+    app_id = created.json()["id"]
+    assert created.json()["applied"] is False
+
+    toggled = client.patch(f"/applications/{app_id}", headers=headers)
+    assert toggled.json()["applied"] is True
+
+    toggled_again = client.patch(f"/applications/{app_id}", headers=headers)
+    assert toggled_again.json()["applied"] is False
+    print("OK  test_toggle_applied")
+
+
+def test_oldest_application_pruned_past_the_cap():
+    import app.api.profile_routes as profile_routes
+
+    headers = get_auth_header()
+    original_cap = profile_routes.MAX_APPLICATIONS_PER_USER
+    profile_routes.MAX_APPLICATIONS_PER_USER = 3  # cap petit per no crear 20 files de veritat
+    try:
+        ids = []
+        for i in range(4):
+            created = client.post(
+                "/applications",
+                json={"title": f"App {i}", "jd_text": "x", "cv_text_used": "y"},
+                headers=headers,
+            )
+            ids.append(created.json()["id"])
+
+        listed = client.get("/applications", headers=headers)
+        listed_ids = {a["id"] for a in listed.json()}
+        assert ids[0] not in listed_ids  # la primera (mes antiga) ha estat podada
+        assert len(listed_ids) == 3
+    finally:
+        profile_routes.MAX_APPLICATIONS_PER_USER = original_cap
+    print("OK  test_oldest_application_pruned_past_the_cap")
+
+
 if __name__ == "__main__":
     test_profile_starts_empty_then_can_be_updated()
     test_create_and_list_and_retrieve_application()
     test_cannot_access_another_users_application()
     test_profile_and_applications_require_auth()
+    test_delete_application()
+    test_toggle_applied()
+    test_oldest_application_pruned_past_the_cap()
     print("\nAll profile/applications tests passed.")
     os.remove("test_profile.db")

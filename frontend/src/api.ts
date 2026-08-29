@@ -209,3 +209,11 @@ export function listApplications(token: string): Promise<ApplicationSummary[]> {
 export function getApplication(token: string, id: number): Promise<ApplicationDetail> {
   return authedFetch(`/applications/${id}`, token)
 }
+
+export function deleteApplication(token: string, id: number): Promise<{ deleted: boolean }> {
+  return authedFetch(`/applications/${id}`, token, { method: 'DELETE' })
+}
+
+export function toggleApplied(token: string, id: number): Promise<ApplicationSummary> {
+  return authedFetch(`/applications/${id}`, token, { method: 'PATCH' })
+}
