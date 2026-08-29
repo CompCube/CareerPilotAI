@@ -53,25 +53,32 @@ function TogglePill({ active, onClick, children }: { active: boolean; onClick: (
 
 /**
  * Camp de text amb dos modes: escriure/enganxar text pla, o pujar un PDF.
- * Quan es puja un PDF, NO es bolca tot el text transcrit a la vista --
- * nomes es mostra el nom del fitxer com a confirmacio (el text s'usa
- * igualment per sota, nomes no s'ensenya en cru).
+ * IMPORTANT: uploadedFileName viu al component PARE (UploadStage), no aqui
+ * dins -- si visques nomes aqui, un toggle extern (Use my base resume /
+ * Use my last application) podria canviar `value` sense que aquest
+ * component s'assabentes, deixant el "✓ fitxer.pdf" penjat tot i que el
+ * text real ja no es el del PDF. Aquest era exactament un bug real trobat.
  */
 function ResumeField({
   label,
   value,
   onChange,
   placeholder,
+  uploadedFileName,
+  onFileUploaded,
+  onClearFile,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder: string
+  uploadedFileName: string | null
+  onFileUploaded: (fileName: string, text: string) => void
+  onClearFile: () => void
 }) {
   const { t } = useLanguage()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isExtracting, setIsExtracting] = useState(false)
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [pdfError, setPdfError] = useState<string | null>(null)
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -81,19 +88,13 @@ function ResumeField({
     setPdfError(null)
     try {
       const text = await extractPdfText(file)
-      onChange(text)
-      setUploadedFileName(file.name)
+      onFileUploaded(file.name, text)
     } catch (err) {
       setPdfError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
       setIsExtracting(false)
       e.target.value = ''
     }
-  }
-
-  function clearUpload() {
-    setUploadedFileName(null)
-    onChange('')
   }
 
   return (
@@ -118,7 +119,7 @@ function ResumeField({
             <CheckIcon />
             {uploadedFileName}
           </span>
-          <button onClick={clearUpload} className="font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-accent">
+          <button onClick={onClearFile} className="font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-accent">
             {t.upload.removeFile}
           </button>
         </div>
@@ -148,6 +149,8 @@ export function UploadStage({
   const { t } = useLanguage()
   const [cvText, setCvText] = useState('')
   const [jdText, setJdText] = useState('')
+  const [cvFileName, setCvFileName] = useState<string | null>(null)
+  const [jdFileName, setJdFileName] = useState<string | null>(null)
   const [useBaseCv, setUseBaseCv] = useState(false)
   const [useLastApplication, setUseLastApplication] = useState(false)
 
@@ -157,6 +160,7 @@ export function UploadStage({
     const next = !useBaseCv
     setUseBaseCv(next)
     setUseLastApplication(false)
+    setCvFileName(null) // el toggle sempre substitueix qualsevol PDF pujat abans
     setCvText(next && baseCvText ? baseCvText : '')
   }
 
@@ -164,6 +168,8 @@ export function UploadStage({
     const next = !useLastApplication
     setUseLastApplication(next)
     setUseBaseCv(false)
+    setCvFileName(null)
+    setJdFileName(null) // idem pel camp de JD
     if (next && lastApplication) {
       setCvText(lastApplication.cvText)
       setJdText(lastApplication.jdText)
@@ -171,6 +177,19 @@ export function UploadStage({
       setCvText('')
       setJdText('')
     }
+  }
+
+  function handleCvFileUploaded(fileName: string, text: string) {
+    setUseBaseCv(false)
+    setUseLastApplication(false)
+    setCvFileName(fileName)
+    setCvText(text)
+  }
+
+  function handleJdFileUploaded(fileName: string, text: string) {
+    setUseLastApplication(false)
+    setJdFileName(fileName)
+    setJdText(text)
   }
 
   return (
@@ -194,8 +213,30 @@ export function UploadStage({
       )}
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
-        <ResumeField label={t.upload.cvLabel} value={cvText} onChange={setCvText} placeholder={t.upload.cvPlaceholder} />
-        <ResumeField label={t.upload.jdLabel} value={jdText} onChange={setJdText} placeholder={t.upload.jdPlaceholder} />
+        <ResumeField
+          label={t.upload.cvLabel}
+          value={cvText}
+          onChange={setCvText}
+          placeholder={t.upload.cvPlaceholder}
+          uploadedFileName={cvFileName}
+          onFileUploaded={handleCvFileUploaded}
+          onClearFile={() => {
+            setCvFileName(null)
+            setCvText('')
+          }}
+        />
+        <ResumeField
+          label={t.upload.jdLabel}
+          value={jdText}
+          onChange={setJdText}
+          placeholder={t.upload.jdPlaceholder}
+          uploadedFileName={jdFileName}
+          onFileUploaded={handleJdFileUploaded}
+          onClearFile={() => {
+            setJdFileName(null)
+            setJdText('')
+          }}
+        />
       </div>
 
       {error && (
