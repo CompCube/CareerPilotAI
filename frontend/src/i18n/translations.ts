@@ -93,6 +93,7 @@ export interface Translations {
   }
   auth: {
     logout: string
+    welcomeBack: string
   }
   footer: {
     copyright: string
@@ -200,6 +201,7 @@ export const translations: Record<Language, Translations> = {
     },
     auth: {
       logout: 'Log out',
+      welcomeBack: 'Signed in as {name}.',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — portfolio project',
@@ -320,6 +322,7 @@ export const translations: Record<Language, Translations> = {
     },
     auth: {
       logout: 'Cerrar sesión',
+      welcomeBack: 'Sesión iniciada como {name}.',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — proyecto de portfolio',

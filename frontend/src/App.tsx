@@ -37,6 +37,7 @@ function App() {
     localStorage.getItem('cp_token'),
   )
   const [currentUser, setCurrentUser] = useState<UserOut | null>(null)
+  const [loginToast, setLoginToast] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authToken) return
@@ -56,6 +57,8 @@ function App() {
       localStorage.setItem('cp_token', result.access_token)
       setAuthToken(result.access_token)
       setCurrentUser(result.user)
+      setLoginToast(result.user.name || result.user.email)
+      setTimeout(() => setLoginToast(null), 3000)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
     }
@@ -283,6 +286,11 @@ function App() {
       </header>
 
       <main className="flex-1 px-6 py-10">
+        {loginToast && (
+          <div className="mx-auto mb-6 max-w-6xl rounded-md border border-match/40 bg-match/10 px-4 py-2.5 font-mono text-xs text-match">
+            {t.auth.welcomeBack.replace('{name}', loginToast)}
+          </div>
+        )}
       {stage !== 'mode' && (
         <div className="mx-auto mb-6 max-w-6xl">
           <button
