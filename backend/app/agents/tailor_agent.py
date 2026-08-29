@@ -273,10 +273,17 @@ def _check_clarification(
 # ---------------------------------------------------------------------------
 
 
-def continue_tailor_session(session_id: str, user_message: str) -> TailorResponse:
+def continue_tailor_session(
+    session_id: str, user_message: str | None = None, skip_remaining: bool = False
+) -> TailorResponse:
     state = _tailor_states.get(session_id)
     if state is None:
         raise KeyError(f"Unknown tailor session: {session_id}")
+
+    # Escape hatch de l'usuari (boto "Skip remaining questions") -- no cal
+    # cap comprovacio d'aclariment ni resposta de veritat, salta directe.
+    if skip_remaining and state.phase in ("interrogate", "deepen"):
+        return _start_assemble(session_id, state)
 
     if state.phase == "interrogate":
         check = _check_clarification(session_id, state, user_message)

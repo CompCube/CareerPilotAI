@@ -55,6 +55,7 @@ export interface Translations {
     copied: string
     finish: string
     thinking: string
+    skipRemaining: string
     before: string
     after: string
     agentAsks: string
@@ -106,6 +107,8 @@ export interface Translations {
     backToList: string
     noApplicationsYet: string
     useBaseCv: string
+    topSkillsLabel: string
+    prepareInterviewForThis: string
   }
   footer: {
     copyright: string
@@ -175,6 +178,7 @@ export const translations: Record<Language, Translations> = {
       copied: 'Copied!',
       finish: 'Finish Tailoring →',
       thinking: 'Thinking…',
+      skipRemaining: 'Skip remaining questions →',
       before: 'Before',
       after: 'Now',
       agentAsks: 'The agent asks',
@@ -226,6 +230,8 @@ export const translations: Record<Language, Translations> = {
       backToList: '← Back to list',
       noApplicationsYet: "No applications saved yet -- they'll show up here once you finish tailoring one while signed in.",
       useBaseCv: 'Use my base resume',
+      topSkillsLabel: 'Top skills they were looking for',
+      prepareInterviewForThis: 'Prepare Interview for this application →',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — portfolio project',
@@ -308,6 +314,7 @@ export const translations: Record<Language, Translations> = {
       copied: '¡Copiado!',
       finish: 'Finalizar Retoque →',
       thinking: 'Pensando…',
+      skipRemaining: 'Saltar preguntas restantes →',
       before: 'Antes',
       after: 'Ahora',
       agentAsks: 'El agente pregunta',
@@ -359,6 +366,8 @@ export const translations: Record<Language, Translations> = {
       backToList: '← Volver a la lista',
       noApplicationsYet: 'Aún no tienes candidaturas guardadas -- aparecerán aquí cuando termines de retocar una estando conectado.',
       useBaseCv: 'Usar mi currículum base',
+      topSkillsLabel: 'Skills principales que buscaban',
+      prepareInterviewForThis: 'Preparar entrevista para esta candidatura →',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — proyecto de portfolio',

@@ -214,6 +214,35 @@ def test_non_fast_mode_without_analysis_raises_clean_error():
     print("OK  test_non_fast_mode_without_analysis_raises_clean_error")
 
 
+def test_skip_remaining_jumps_straight_to_assemble_no_clarification_call():
+    """El boto 'Skip remaining questions' -- no ha de passar per la
+    comprovacio d'aclariment, ha de saltar directe, sense cap crida extra."""
+    analysis = make_analysis(n_competencies=3)  # 3 requirements pendents
+
+    call_sequence = [
+        EXTRACT_RESPONSE,          # extract
+        QUESTION_RESPONSE,         # ask competency 0 (nomes la primera es arriba a preguntar)
+        ASSEMBLE_START_RESPONSE,   # salta directe aqui en cridar skip_remaining
+        SECTION_COMPLETE("t"), SECTION_COMPLETE("s"), SECTION_COMPLETE("p"),
+        SECTION_COMPLETE("sk"), SECTION_COMPLETE("a"), SECTION_COMPLETE("e"),
+    ]
+
+    with patch("app.services.structured_output.call_llm", side_effect=call_sequence) as mock_call:
+        r1 = start_tailor_session(cv_text="CV " * 10, jd_text="JD " * 10, analysis=analysis)
+        assert r1.phase == "interrogate"
+        session_id = r1.session_id
+
+        # Encara nomes hem contestat 0 de 3 requirements -- fem servir el boto
+        r2 = continue_tailor_session(session_id, user_message=None, skip_remaining=True)
+        assert r2.phase == "complete"
+        assert r2.done is True
+        # 1 extract + 1 interrogate + 1 assemble_start + 6 seccions = 9 crides.
+        # Si el skip hagues passat per la comprovacio de claredat, series 10+.
+        assert mock_call.call_count == 9
+
+    print("OK  test_skip_remaining_jumps_straight_to_assemble_no_clarification_call")
+
+
 if __name__ == "__main__":
     test_clarification_does_not_advance_but_real_answer_does()
     test_full_flow_extract_through_complete()
@@ -221,4 +250,5 @@ if __name__ == "__main__":
     test_unknown_session_raises_keyerror()
     test_fast_mode_skips_interrogate_and_deepen_entirely()
     test_non_fast_mode_without_analysis_raises_clean_error()
+    test_skip_remaining_jumps_straight_to_assemble_no_clarification_call()
     print("\nAll Tailor v2 tests passed.")

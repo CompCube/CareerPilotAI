@@ -15,7 +15,15 @@ function DetailSection({ label, content }: { label: string; content: string }) {
   )
 }
 
-export function ApplicationsModal({ token, onClose }: { token: string; onClose: () => void }) {
+export function ApplicationsModal({
+  token,
+  onClose,
+  onPrepareInterview,
+}: {
+  token: string
+  onClose: () => void
+  onPrepareInterview: (jdText: string, cvTextUsed: string) => void
+}) {
   const { t } = useLanguage()
   const [applications, setApplications] = useState<ApplicationSummary[]>([])
   const [selected, setSelected] = useState<ApplicationDetail | null>(null)
@@ -38,6 +46,10 @@ export function ApplicationsModal({ token, onClose }: { token: string; onClose: 
       setError(err instanceof ApiError ? err.message : t.errors.generic)
     }
   }
+
+  const topCompetencies = selected?.analysis
+    ? [...selected.analysis.competencies].sort((a, b) => a.priority - b.priority).slice(0, 5)
+    : []
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-6" onClick={onClose}>
@@ -68,18 +80,46 @@ export function ApplicationsModal({ token, onClose }: { token: string; onClose: 
             </button>
 
             {selected.analysis && (
-              <div className="mt-4 rounded-lg border border-accent/40 bg-accent/10 p-4">
-                <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
-                  {t.analysis.fitScoreLabel}
-                </p>
-                <p className="mt-1 font-display text-2xl font-semibold text-accent">
-                  {Math.round(selected.analysis.fit_score)}
-                </p>
-              </div>
+              <>
+                <div className="mt-4 flex items-start justify-between gap-4 rounded-lg border border-accent/40 bg-accent/10 p-4">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+                      {t.analysis.roleSummaryLabel}
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-paper">{selected.analysis.role_summary}</p>
+                  </div>
+                  <div className="shrink-0 text-center">
+                    <p className="font-display text-2xl font-semibold text-accent">
+                      {Math.round(selected.analysis.fit_score)}
+                    </p>
+                    <p className="font-mono text-[9px] uppercase tracking-wider text-accent/70">
+                      {t.analysis.fitScoreLabel}
+                    </p>
+                  </div>
+                </div>
+
+                {topCompetencies.length > 0 && (
+                  <div className="mt-3 rounded-lg border border-panel-border bg-ink p-4">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+                      {t.auth.topSkillsLabel}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {topCompetencies.map((c) => (
+                        <span
+                          key={c.competency}
+                          className="rounded-full border border-panel-border px-2.5 py-1 text-xs text-paper"
+                        >
+                          {c.competency}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {selected.tailor_sections && (
-              <div className="mt-4 space-y-3">
+              <div className="mt-3 space-y-3">
                 <DetailSection label={t.tailor.summaryLabel} content={selected.tailor_sections.professional_summary} />
                 <DetailSection label={t.tailor.skillsSectionLabel} content={selected.tailor_sections.skills} />
                 <DetailSection
@@ -96,6 +136,13 @@ export function ApplicationsModal({ token, onClose }: { token: string; onClose: 
                 />
               </div>
             )}
+
+            <button
+              onClick={() => onPrepareInterview(selected.jd_text, selected.cv_text_used)}
+              className="mt-4 w-full rounded-md bg-accent px-6 py-3 font-mono text-sm uppercase tracking-wider text-ink transition-opacity hover:opacity-90"
+            >
+              {t.auth.prepareInterviewForThis}
+            </button>
           </div>
         ) : isLoading ? (
           <p className="mt-6 text-sm text-muted">{t.upload.submitLoading}</p>

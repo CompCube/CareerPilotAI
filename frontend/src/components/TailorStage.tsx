@@ -9,6 +9,7 @@ type Props = {
   history: TailorTurn[]
   tailorState: TailorResponse
   onAnswer: (message: string) => void
+  onSkipRemaining: () => void
   onComplete: () => void
   isLoading: boolean
 }
@@ -55,7 +56,7 @@ function CopyableCard({
   )
 }
 
-export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoading }: Props) {
+export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, onComplete, isLoading }: Props) {
   const { t } = useLanguage()
   const [reply, setReply] = useState('')
   const chatScrollRef = useRef<HTMLDivElement>(null)
@@ -139,6 +140,16 @@ export function TailorStage({ history, tailorState, onAnswer, onComplete, isLoad
                 {t.tailor.send}
               </button>
             </div>
+          )}
+
+          {canReply && (tailorState.phase === 'interrogate' || tailorState.phase === 'deepen') && (
+            <button
+              onClick={onSkipRemaining}
+              disabled={isLoading}
+              className="mt-2 self-start font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-accent disabled:opacity-40"
+            >
+              {t.tailor.skipRemaining}
+            </button>
           )}
 
           {tailorState.done && (

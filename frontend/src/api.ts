@@ -117,8 +117,12 @@ export function startTailor(
   return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis, language: lang, fast })
 }
 
-export function continueTailor(sessionId: string, userMessage: string): Promise<TailorResponse> {
-  return post('/tailor', { session_id: sessionId, user_message: userMessage })
+export function continueTailor(
+  sessionId: string,
+  userMessage?: string,
+  skipRemaining: boolean = false,
+): Promise<TailorResponse> {
+  return post('/tailor', { session_id: sessionId, user_message: userMessage, skip_remaining: skipRemaining })
 }
 
 export function startInterview(

@@ -98,14 +98,16 @@ async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
                 language=payload.language, fast=payload.fast,
             )
 
-        if not payload.user_message:
+        if not payload.user_message and not payload.skip_remaining:
             raise HTTPException(
                 status_code=400,
                 detail="user_message is required to continue an existing session.",
             )
         try:
             return continue_tailor_session(
-                session_id=payload.session_id, user_message=payload.user_message
+                session_id=payload.session_id,
+                user_message=payload.user_message,
+                skip_remaining=payload.skip_remaining,
             )
         except KeyError:
             raise HTTPException(

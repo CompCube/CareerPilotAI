@@ -235,6 +235,27 @@ function App() {
     }
   }
 
+  async function handleSkipRemaining() {
+    if (!tailorState) return
+    setIsLoading(true)
+    setError(null)
+    setTailorHistory((prev) =>
+      prev.map((turn, i) =>
+        i === prev.length - 1 ? { ...turn, userReply: '(skipped remaining questions)' } : turn,
+      ),
+    )
+    try {
+      const result = await continueTailor(tailorState.session_id, undefined, true)
+      setTailorState(result)
+      setTailorHistory((prev) => [...prev, { agentMessage: result.agent_message, userReply: null }])
+      if (result.done) maybeSaveApplication(jdText, cvText, analysis, result.sections)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   function goToInterview() {
     setStage('interview')
   }
@@ -378,6 +399,7 @@ function App() {
           history={tailorHistory}
           tailorState={tailorState}
           onAnswer={handleTailorAnswer}
+          onSkipRemaining={handleSkipRemaining}
           onComplete={() => setStage('done')}
           isLoading={isLoading}
         />
@@ -433,7 +455,19 @@ function App() {
         />
       )}
       {showApplicationsModal && authToken && (
-        <ApplicationsModal token={authToken} onClose={() => setShowApplicationsModal(false)} />
+        <ApplicationsModal
+          token={authToken}
+          onClose={() => setShowApplicationsModal(false)}
+          onPrepareInterview={(jd, cv) => {
+            setMode('interview_practice')
+            setJdText(jd)
+            setCvText(cv)
+            setInterviewState(null)
+            setInterviewHistory([])
+            setShowApplicationsModal(false)
+            setStage('interview')
+          }}
+        />
       )}
     </div>
   )

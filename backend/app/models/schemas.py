@@ -80,6 +80,10 @@ class TailorRequest(BaseModel):
     user_message: str | None = Field(
         None, description="Resposta de l'usuari a una pregunta de l'agent"
     )
+    skip_remaining: bool = Field(
+        False,
+        description="Salta directament a Assemble amb el que ja s'ha contestat fins ara",
+    )
     language: Literal["en", "es"] = "en"
     fast: bool = Field(
         False,
