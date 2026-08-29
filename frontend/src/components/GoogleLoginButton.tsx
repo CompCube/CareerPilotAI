@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageContext'
 
 declare global {
   interface Window {
@@ -32,11 +33,12 @@ function ProfileIcon() {
  * de Google Identity Services, no un hack.
  */
 export function GoogleLoginButton({ onToken }: { onToken: (googleIdToken: string) => void }) {
+  const { t } = useLanguage()
   const initialized = useRef(false)
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return
+    if (!GOOGLE_CLIENT_ID || initialized.current) return
 
     let attempts = 0
     const tryInit = () => {
@@ -58,13 +60,21 @@ export function GoogleLoginButton({ onToken }: { onToken: (googleIdToken: string
   if (!GOOGLE_CLIENT_ID) return null
 
   return (
-    <button
-      onClick={() => window.google?.accounts.id.prompt()}
-      disabled={!isReady}
-      title="Sign in with Google"
-      className="flex h-8 w-8 items-center justify-center rounded-full border border-panel-border text-muted transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
-    >
-      <ProfileIcon />
-    </button>
+    <div className="group relative">
+      <button
+        onClick={() => window.google?.accounts.id.prompt()}
+        disabled={!isReady}
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-panel-border text-muted transition-colors group-hover:border-accent group-hover:text-accent disabled:opacity-40"
+      >
+        <ProfileIcon />
+      </button>
+
+      {/* Pont invisible perque el hover no es talli entre el boto i el label */}
+      <div className="absolute right-0 top-full h-2 w-32" />
+
+      <div className="invisible absolute right-0 top-full z-50 whitespace-nowrap rounded-md border border-panel-border bg-panel px-3 py-1.5 opacity-0 shadow-lg transition-opacity group-hover:visible group-hover:opacity-100">
+        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">{t.auth.signIn}</p>
+      </div>
+    </div>
   )
 }

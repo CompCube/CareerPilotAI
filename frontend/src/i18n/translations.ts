@@ -92,6 +92,7 @@ export interface Translations {
     generic: string
   }
   auth: {
+    signIn: string
     logout: string
     welcomeBack: string
     profileSettings: string
@@ -211,6 +212,7 @@ export const translations: Record<Language, Translations> = {
       generic: 'Could not connect to the server.',
     },
     auth: {
+      signIn: 'Sign in',
       logout: 'Log out',
       welcomeBack: 'Signed in as {name}.',
       profileSettings: 'Profile Settings',
@@ -343,6 +345,7 @@ export const translations: Record<Language, Translations> = {
       generic: 'No se ha podido conectar con el servidor.',
     },
     auth: {
+      signIn: 'Iniciar sesión',
       logout: 'Cerrar sesión',
       welcomeBack: 'Sesión iniciada como {name}.',
       profileSettings: 'Ajustes de perfil',
