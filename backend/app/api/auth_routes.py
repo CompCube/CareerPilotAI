@@ -4,6 +4,8 @@ responsabilitats diferents -- login no te res a veure amb l'orquestracio
 dels agents.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -17,6 +19,7 @@ from app.core.security import (
 from app.models.db_models import User
 from app.models.schemas import GoogleLoginRequest, LoginResponse, UserOut
 
+logger = logging.getLogger("careerpilot.auth")
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -25,6 +28,7 @@ def login_with_google(payload: GoogleLoginRequest, db: Session = Depends(get_db)
     try:
         google_data = verify_google_id_token(payload.google_id_token)
     except AuthError as exc:
+        logger.warning("google_login_rejected reason=%s", str(exc))
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 
     google_id = google_data["sub"]
