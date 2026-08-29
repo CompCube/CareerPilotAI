@@ -11,8 +11,10 @@ from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from app.api.auth_routes import router as auth_router
 from app.api.routes import router
 from app.core.config import get_settings
+from app.core.database import Base, engine
 from app.core.limiter import limiter
 
 settings = get_settings()
@@ -20,6 +22,11 @@ settings = get_settings()
 app = FastAPI(title="CareerPilot AI API", version="0.1.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Crea les taules si no existeixen -- suficient per avui (nomes taula
+# 'users'). Per canvis d'esquema mes endavant caldria Alembic, no aquest
+# create_all simple.
+Base.metadata.create_all(bind=engine)
 
 # --- CORS: nomes el frontend desplegat pot cridar aquesta API ---
 app.add_middleware(
@@ -43,3 +50,4 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 app.include_router(router)
+app.include_router(auth_router)

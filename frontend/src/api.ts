@@ -136,3 +136,20 @@ export function continueInterview(
 ): Promise<InterviewResponse> {
   return post('/interview', { session_id: sessionId, user_answer: userAnswer })
 }
+
+// --- Auth ---
+
+export type UserOut = { id: number; email: string; name: string | null }
+export type LoginResponse = { access_token: string; user: UserOut }
+
+export function loginWithGoogle(googleIdToken: string): Promise<LoginResponse> {
+  return post('/auth/google', { google_id_token: googleIdToken })
+}
+
+export async function getMe(token: string): Promise<UserOut> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) throw new ApiError('Session expired', response.status)
+  return response.json()
+}

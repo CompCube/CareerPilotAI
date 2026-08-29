@@ -38,6 +38,11 @@ class Settings:
     # --- Upload validation ---
     max_upload_size_mb: int = int(os.environ.get("MAX_UPLOAD_SIZE_MB", "5"))
 
+    # --- Auth (login amb Google, JWT propi) ---
+    jwt_secret: str = os.environ.get("JWT_SECRET", "")
+    jwt_expiry_days: int = int(os.environ.get("JWT_EXPIRY_DAYS", "7"))
+    google_client_id: str = os.environ.get("GOOGLE_CLIENT_ID", "")
+
     def validate(self) -> None:
         """Falla ràpid i clar si falta configuració crítica, en lloc de fallar
         de forma confusa a mig d'una petició d'un usuari."""
@@ -46,6 +51,9 @@ class Settings:
                 "ANTHROPIC_API_KEY no configurada. Copia .env.example a .env "
                 "i afegeix la teva clau (console.anthropic.com)."
             )
+        # Nota: NO validem jwt_secret/google_client_id aqui -- fer-ho tallaria
+        # l'app sencera per a qui encara no ha configurat el login. Es
+        # comproven nomes quan algu fa servir /auth/google de veritat.
 
 
 @lru_cache
