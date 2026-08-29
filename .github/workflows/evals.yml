@@ -1,0 +1,34 @@
+name: Eval Suite
+
+on:
+  workflow_dispatch:
+    # Manual trigger only -- this makes ~15 real calls to the Anthropic API
+    # and costs a small amount of real credit. Never runs automatically.
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set real API key from repository secret
+        run: echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+
+      - name: Run eval suite (real API calls, measures output quality)
+        run: python evals/run_evals.py
+
+      - name: Upload report as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: backend/evals/report.md

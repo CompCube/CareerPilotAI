@@ -79,6 +79,17 @@ cd backend
 python evals/run_evals.py   # writes evals/report.md
 ```
 
+## CI/CD
+
+Two GitHub Actions workflows live in `.github/workflows/`:
+- **`tests.yml`** — runs the 20 mocked tests automatically on every push and
+  pull request to `main`. Zero API cost, since the LLM is mocked.
+- **`evals.yml`** — runs the eval suite against the real API. **Manual
+  trigger only** ("Run workflow" on the Actions tab), since it costs real
+  credit. Requires an `ANTHROPIC_API_KEY` repository secret (Settings →
+  Secrets and variables → Actions). Results download as a build artifact,
+  viewable from the browser — no local setup needed to see them.
+
 ## Production readiness (honest assessment)
 
 This is a portfolio project, not a production service, and that's a
@@ -94,7 +105,6 @@ at scale, in rough order of severity:
 - No per-user usage quotas (there are no user accounts at all).
 
 **Would work but carries real risk:**
-- No CI pipeline running tests automatically before merge.
 - No error tracking (e.g. Sentry) — failures are only visible in raw logs.
 - No load testing has been done.
 - Per-IP rate limiting is easy to bypass with rotating IPs/VPNs.
