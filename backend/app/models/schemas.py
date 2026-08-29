@@ -192,3 +192,23 @@ class InterviewResponse(BaseModel):
     question: str
     turn_number: int
     done: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Auth
+# ---------------------------------------------------------------------------
+
+
+class GoogleLoginRequest(BaseModel):
+    google_id_token: str = Field(..., description="ID token que retorna Google Identity Services")
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    name: str | None = None
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    user: UserOut

@@ -5,11 +5,14 @@ import {
   continueTailor,
   startInterview,
   startTailor,
+  loginWithGoogle,
+  getMe,
   ApiError,
   type AnalyzeResponse,
   type InterviewMode,
   type InterviewResponse,
   type TailorResponse,
+  type UserOut,
 } from './api'
 import { StageStepper, type Stage } from './components/StageStepper'
 import { ModeSelect, type AppMode } from './components/ModeSelect'
@@ -19,6 +22,7 @@ import { TailorStage, type TailorTurn } from './components/TailorStage'
 import { DoneStage } from './components/DoneStage'
 import { InterviewStage } from './components/InterviewStage'
 import { LegalModal } from './components/LegalModal'
+import { GoogleLoginButton } from './components/GoogleLoginButton'
 import { useLanguage } from './i18n/LanguageContext'
 import type { Language } from './i18n/translations'
 
@@ -27,6 +31,41 @@ type InterviewTurn = { question: string; answer: string | null }
 function App() {
   const { t, lang, setLang } = useLanguage()
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null)
+
+  // --- Auth ---
+  const [authToken, setAuthToken] = useState<string | null>(() =>
+    localStorage.getItem('cp_token'),
+  )
+  const [currentUser, setCurrentUser] = useState<UserOut | null>(null)
+
+  useEffect(() => {
+    if (!authToken) return
+    getMe(authToken)
+      .then(setCurrentUser)
+      .catch(() => {
+        // Token caducat o invalid -- neteja silenciosa, no cal molestar
+        // l'usuari amb un error, simplement torna a l'estat "sense sessio".
+        localStorage.removeItem('cp_token')
+        setAuthToken(null)
+      })
+  }, [authToken])
+
+  async function handleGoogleToken(googleIdToken: string) {
+    try {
+      const result = await loginWithGoogle(googleIdToken)
+      localStorage.setItem('cp_token', result.access_token)
+      setAuthToken(result.access_token)
+      setCurrentUser(result.user)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('cp_token')
+    setAuthToken(null)
+    setCurrentUser(null)
+  }
 
   const [mode, setMode] = useState<AppMode | null>(null)
   const [stage, setStage] = useState<Stage>('mode')
@@ -226,6 +265,19 @@ function App() {
                 </button>
               ))}
             </div>
+            {currentUser ? (
+              <div className="flex items-center gap-2 font-mono text-xs text-muted">
+                <span className="hidden sm:inline">{currentUser.email}</span>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-full border border-panel-border px-2.5 py-1 uppercase tracking-wider transition-colors hover:text-accent"
+                >
+                  {t.auth.logout}
+                </button>
+              </div>
+            ) : (
+              <GoogleLoginButton onToken={handleGoogleToken} />
+            )}
           </div>
         </div>
       </header>

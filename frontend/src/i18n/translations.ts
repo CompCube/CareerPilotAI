@@ -91,6 +91,9 @@ export interface Translations {
   errors: {
     generic: string
   }
+  auth: {
+    logout: string
+  }
   footer: {
     copyright: string
     viewSource: string
@@ -194,6 +197,9 @@ export const translations: Record<Language, Translations> = {
     },
     errors: {
       generic: 'Could not connect to the server.',
+    },
+    auth: {
+      logout: 'Log out',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — portfolio project',
@@ -311,6 +317,9 @@ export const translations: Record<Language, Translations> = {
     },
     errors: {
       generic: 'No se ha podido conectar con el servidor.',
+    },
+    auth: {
+      logout: 'Cerrar sesión',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — proyecto de portfolio',
