@@ -8,6 +8,7 @@ type Props = {
   isLoading: boolean
   error: string | null
   submitLabel?: string
+  baseCvText?: string | null
 }
 
 function PdfUploadButton({
@@ -71,18 +72,36 @@ function PdfUploadButton({
   )
 }
 
-export function UploadStage({ onSubmit, onQuickTailor, isLoading, error, submitLabel }: Props) {
+export function UploadStage({ onSubmit, onQuickTailor, isLoading, error, submitLabel, baseCvText }: Props) {
   const { t } = useLanguage()
   const [cvText, setCvText] = useState('')
   const [jdText, setJdText] = useState('')
   const [pdfError, setPdfError] = useState<string | null>(null)
+  const [useBaseCv, setUseBaseCv] = useState(false)
 
   const canSubmit = cvText.trim().length > 20 && jdText.trim().length > 20 && !isLoading
+
+  function handleToggleBaseCv(checked: boolean) {
+    setUseBaseCv(checked)
+    if (checked && baseCvText) setCvText(baseCvText)
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.upload.heading}</h1>
       <p className="mt-2 text-muted">{t.upload.subheading}</p>
+
+      {baseCvText && (
+        <label className="mt-4 flex w-fit items-center gap-2 text-sm text-paper">
+          <input
+            type="checkbox"
+            checked={useBaseCv}
+            onChange={(e) => handleToggleBaseCv(e.target.checked)}
+            className="h-4 w-4 accent-accent"
+          />
+          {t.auth.useBaseCv}
+        </label>
+      )}
 
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
         <div>

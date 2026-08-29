@@ -94,6 +94,17 @@ export interface Translations {
   auth: {
     logout: string
     welcomeBack: string
+    profileSettings: string
+    myApplications: string
+    noName: string
+    baseCvLabel: string
+    baseCvHint: string
+    saveCv: string
+    saving: string
+    saved: string
+    backToList: string
+    noApplicationsYet: string
+    useBaseCv: string
   }
   footer: {
     copyright: string
@@ -202,6 +213,17 @@ export const translations: Record<Language, Translations> = {
     auth: {
       logout: 'Log out',
       welcomeBack: 'Signed in as {name}.',
+      profileSettings: 'Profile Settings',
+      myApplications: 'My Applications',
+      noName: 'No name set',
+      baseCvLabel: 'Base resume',
+      baseCvHint: "Saved once, reused when you check \"Use my base resume\" on a new application.",
+      saveCv: 'Save',
+      saving: 'Saving…',
+      saved: 'Saved!',
+      backToList: '← Back to list',
+      noApplicationsYet: "No applications saved yet -- they'll show up here once you finish tailoring one while signed in.",
+      useBaseCv: 'Use my base resume',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — portfolio project',
@@ -323,6 +345,17 @@ export const translations: Record<Language, Translations> = {
     auth: {
       logout: 'Cerrar sesión',
       welcomeBack: 'Sesión iniciada como {name}.',
+      profileSettings: 'Ajustes de perfil',
+      myApplications: 'Mis candidaturas',
+      noName: 'Sin nombre',
+      baseCvLabel: 'Currículum base',
+      baseCvHint: 'Se guarda una vez, y se reutiliza cuando marcas "Usar mi currículum base" en una nueva candidatura.',
+      saveCv: 'Guardar',
+      saving: 'Guardando…',
+      saved: '¡Guardado!',
+      backToList: '← Volver a la lista',
+      noApplicationsYet: 'Aún no tienes candidaturas guardadas -- aparecerán aquí cuando termines de retocar una estando conectado.',
+      useBaseCv: 'Usar mi currículum base',
     },
     footer: {
       copyright: '© 2026 CareerPilot AI — proyecto de portfolio',

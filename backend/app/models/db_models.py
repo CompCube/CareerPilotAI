@@ -1,12 +1,12 @@
 """
-Model d'usuari. Nomes el necessari per avui (login funcionant) -- guardar
-analisis i sessions de Tailor associades a l'usuari es la propera peça,
-no d'avui.
+Models de base de dades. Avui afegim les dues taules de la Capa 1:
+UserProfile (CV base) i Application (historial de candidatures).
 """
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 
@@ -19,3 +19,40 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    profile = relationship("UserProfile", back_populates="user", uselist=False)
+    applications = relationship("Application", back_populates="user")
+
+
+class UserProfile(Base):
+    """CV base de l'usuari -- s'usa per defecte quan marca el checkbox
+    'Usa el meu CV base' en lloc d'enganxar-lo cada vegada."""
+
+    __tablename__ = "user_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    base_cv_text = Column(Text, nullable=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="profile")
+
+
+class Application(Base):
+    """Una entrada de l'historial -- una JD analitzada, amb el resultat
+    de l'Analyzer i (si es va fer) les seccions del Tailor, guardats com
+    a JSON de text. Nomes es guarda quan l'usuari ha iniciat sessio."""
+
+    __tablename__ = "applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    jd_text = Column(Text, nullable=False)
+    cv_text_used = Column(Text, nullable=False)
+    analysis_json = Column(Text, nullable=True)
+    tailor_sections_json = Column(Text, nullable=True)
+    applied = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="applications")

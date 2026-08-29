@@ -7,6 +7,8 @@ import {
   startTailor,
   loginWithGoogle,
   getMe,
+  getProfile,
+  createApplication,
   ApiError,
   type AnalyzeResponse,
   type InterviewMode,
@@ -23,6 +25,9 @@ import { DoneStage } from './components/DoneStage'
 import { InterviewStage } from './components/InterviewStage'
 import { LegalModal } from './components/LegalModal'
 import { GoogleLoginButton } from './components/GoogleLoginButton'
+import { ProfileDropdown } from './components/ProfileDropdown'
+import { ProfileSettingsModal } from './components/ProfileSettingsModal'
+import { ApplicationsModal } from './components/ApplicationsModal'
 import { useLanguage } from './i18n/LanguageContext'
 import type { Language } from './i18n/translations'
 
@@ -38,6 +43,19 @@ function App() {
   )
   const [currentUser, setCurrentUser] = useState<UserOut | null>(null)
   const [loginToast, setLoginToast] = useState<string | null>(null)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false)
+  const [profileCv, setProfileCv] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!authToken) {
+      setProfileCv(null)
+      return
+    }
+    getProfile(authToken)
+      .then((p) => setProfileCv(p.base_cv_text))
+      .catch(() => setProfileCv(null))
+  }, [authToken])
 
   useEffect(() => {
     if (!authToken) return
@@ -68,6 +86,7 @@ function App() {
     localStorage.removeItem('cp_token')
     setAuthToken(null)
     setCurrentUser(null)
+    setProfileCv(null)
   }
 
   const [mode, setMode] = useState<AppMode | null>(null)
@@ -133,6 +152,30 @@ function App() {
     }
   }
 
+  function deriveTitle(jd: string): string {
+    const firstLine = jd.split('\n').find((l) => l.trim().length > 0) || jd
+    return firstLine.trim().slice(0, 60) || 'Untitled application'
+  }
+
+  function maybeSaveApplication(
+    jd: string,
+    cvUsed: string,
+    analysisData: AnalyzeResponse | null,
+    sections: TailorResponse['sections'] | null,
+  ) {
+    if (!authToken) return // nomes es guarda si l'usuari ha iniciat sessio
+    createApplication(authToken, {
+      title: deriveTitle(jd),
+      jd_text: jd,
+      cv_text_used: cvUsed,
+      analysis: analysisData,
+      tailor_sections: sections,
+    }).catch(() => {
+      // Fire-and-forget -- no interrompem el flux de l'usuari si el
+      // guardat falla, nomes es perd l'historial d'aquesta sessio concreta.
+    })
+  }
+
   async function handleQuickTailor(cv: string, jd: string) {
     setIsLoading(true)
     setError(null)
@@ -149,6 +192,7 @@ function App() {
       // del xat sense conversa a mostrar. Nomes cau a 'tailor' si per algun
       // motiu ha fet falta preguntar (needs_info, cas rar de seguretat).
       setStage(result.done ? 'done' : 'tailor')
+      if (result.done) maybeSaveApplication(jd, cv, null, result.sections)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
@@ -183,6 +227,7 @@ function App() {
       const result = await continueTailor(tailorState.session_id, message)
       setTailorState(result)
       setTailorHistory((prev) => [...prev, { agentMessage: result.agent_message, userReply: null }])
+      if (result.done) maybeSaveApplication(jdText, cvText, analysis, result.sections)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.errors.generic)
     } finally {
@@ -269,15 +314,12 @@ function App() {
               ))}
             </div>
             {currentUser ? (
-              <div className="flex items-center gap-2 font-mono text-xs text-muted">
-                <span className="hidden sm:inline">{currentUser.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="rounded-full border border-panel-border px-2.5 py-1 uppercase tracking-wider transition-colors hover:text-accent"
-                >
-                  {t.auth.logout}
-                </button>
-              </div>
+              <ProfileDropdown
+                email={currentUser.email}
+                onOpenSettings={() => setShowProfileModal(true)}
+                onOpenApplications={() => setShowApplicationsModal(true)}
+                onLogout={handleLogout}
+              />
             ) : (
               <GoogleLoginButton onToken={handleGoogleToken} />
             )}
@@ -310,6 +352,7 @@ function App() {
           onQuickTailor={handleQuickTailor}
           isLoading={isLoading}
           error={error}
+          baseCvText={profileCv}
         />
       )}
 
@@ -380,6 +423,17 @@ function App() {
       </footer>
 
       {legalModal && <LegalModal kind={legalModal} onClose={() => setLegalModal(null)} />}
+      {showProfileModal && authToken && currentUser && (
+        <ProfileSettingsModal
+          token={authToken}
+          email={currentUser.email}
+          name={currentUser.name}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
+      {showApplicationsModal && authToken && (
+        <ApplicationsModal token={authToken} onClose={() => setShowApplicationsModal(false)} />
+      )}
     </div>
   )
 }

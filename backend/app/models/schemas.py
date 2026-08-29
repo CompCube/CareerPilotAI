@@ -212,3 +212,42 @@ class UserOut(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str
     user: UserOut
+
+
+# ---------------------------------------------------------------------------
+# Profile (CV base) i Applications (historial) -- Capa 1
+# ---------------------------------------------------------------------------
+
+
+class ProfileOut(BaseModel):
+    base_cv_text: str | None = None
+
+
+class ProfileUpdateRequest(BaseModel):
+    base_cv_text: str
+
+
+class ApplicationCreateRequest(BaseModel):
+    title: str
+    jd_text: str
+    cv_text_used: str
+    analysis: AnalyzeResponse | None = None
+    tailor_sections: TailorSections | None = None
+
+
+class ApplicationSummary(BaseModel):
+    id: int
+    title: str
+    applied: bool
+    created_at: str
+
+
+class ApplicationDetail(BaseModel):
+    id: int
+    title: str
+    jd_text: str
+    cv_text_used: str
+    analysis: AnalyzeResponse | None = None
+    tailor_sections: TailorSections | None = None
+    applied: bool
+    created_at: str

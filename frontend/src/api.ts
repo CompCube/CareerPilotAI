@@ -153,3 +153,55 @@ export async function getMe(token: string): Promise<UserOut> {
   if (!response.ok) throw new ApiError('Session expired', response.status)
   return response.json()
 }
+
+// --- Profile (CV base) i historial de candidatures ---
+
+async function authedFetch(path: string, token: string, options: RequestInit = {}) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...options.headers },
+  })
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({ detail: 'Unknown error' }))
+    throw new ApiError(detail.detail || `Error ${response.status}`, response.status)
+  }
+  return response.json()
+}
+
+export type ProfileOut = { base_cv_text: string | null }
+export type ApplicationSummary = { id: number; title: string; applied: boolean; created_at: string }
+export type ApplicationDetail = ApplicationSummary & {
+  jd_text: string
+  cv_text_used: string
+  analysis: AnalyzeResponse | null
+  tailor_sections: TailorSections | null
+}
+
+export function getProfile(token: string): Promise<ProfileOut> {
+  return authedFetch('/profile', token)
+}
+
+export function updateProfile(token: string, baseCvText: string): Promise<ProfileOut> {
+  return authedFetch('/profile', token, { method: 'PUT', body: JSON.stringify({ base_cv_text: baseCvText }) })
+}
+
+export function createApplication(
+  token: string,
+  data: {
+    title: string
+    jd_text: string
+    cv_text_used: string
+    analysis: AnalyzeResponse | null
+    tailor_sections: TailorSections | null
+  },
+): Promise<ApplicationSummary> {
+  return authedFetch('/applications', token, { method: 'POST', body: JSON.stringify(data) })
+}
+
+export function listApplications(token: string): Promise<ApplicationSummary[]> {
+  return authedFetch('/applications', token)
+}
+
+export function getApplication(token: string, id: number): Promise<ApplicationDetail> {
+  return authedFetch(`/applications/${id}`, token)
+}

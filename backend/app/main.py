@@ -12,6 +12,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.api.auth_routes import router as auth_router
+from app.api.profile_routes import router as profile_router
 from app.api.routes import router
 from app.core.config import get_settings
 from app.core.database import Base, engine
@@ -51,3 +52,4 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 app.include_router(router)
 app.include_router(auth_router)
+app.include_router(profile_router)
