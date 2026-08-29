@@ -429,6 +429,7 @@ function App() {
           email={currentUser.email}
           name={currentUser.name}
           onClose={() => setShowProfileModal(false)}
+          onSaved={(cvText) => setProfileCv(cvText)}
         />
       )}
       {showApplicationsModal && authToken && (

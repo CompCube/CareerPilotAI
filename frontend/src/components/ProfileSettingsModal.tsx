@@ -17,11 +17,13 @@ export function ProfileSettingsModal({
   email,
   name,
   onClose,
+  onSaved,
 }: {
   token: string
   email: string
   name: string | null
   onClose: () => void
+  onSaved: (cvText: string) => void
 }) {
   const { t } = useLanguage()
   const [cvText, setCvText] = useState('')
@@ -60,6 +62,7 @@ export function ProfileSettingsModal({
     setError(null)
     try {
       await updateProfile(token, cvText)
+      onSaved(cvText)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
