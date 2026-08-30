@@ -38,7 +38,7 @@ export function AnalysisStage({
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {/* --- Esquerra: els 3 panells de context --- */}
-        <div className="space-y-4">
+        <div className="max-h-[55vh] space-y-4 overflow-y-auto pr-1">
           <div className="rounded-lg border border-panel-border bg-panel p-4">
             <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
               {t.analysis.companyLabel}
@@ -69,7 +69,7 @@ export function AnalysisStage({
 
         {/* --- Dreta: tots els requirements, amb el seu propi scroll si
             n'hi ha molts (evita que l'esquerra quedi molt mes curta) --- */}
-        <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
+        <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
           {sorted.map((c) => (
             <div
               key={c.competency}
