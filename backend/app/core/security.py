@@ -89,3 +89,19 @@ def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="Usuari no trobat.")
     return user
+
+
+def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Com get_current_user, pero mai llança error -- per a endpoints com
+    /tailor que funcionen igual amb o sense sessio iniciada (el Tailor
+    es usable sense compte; nomes es fa servir la memoria si n'hi ha)."""
+    if credentials is None:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+    except AuthError:
+        return None
+    return db.query(User).filter(User.id == int(payload["sub"])).first()

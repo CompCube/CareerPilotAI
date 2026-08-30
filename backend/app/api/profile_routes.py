@@ -3,9 +3,12 @@ Rutes de perfil (CV base) i historial de candidatures. Totes protegides --
 requereixen login (get_current_user), ja que son dades personals de l'usuari.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.agents.memory_agent import update_user_memory
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.db_models import Application, User, UserProfile
@@ -19,7 +22,34 @@ from app.models.schemas import (
     TailorSections,
 )
 
+logger = logging.getLogger("careerpilot.memory")
 router = APIRouter(tags=["profile"])
+
+
+def _update_memory_after_application(db: Session, current_user: User, payload: ApplicationCreateRequest) -> None:
+    """Crida l'agent de memoria i desa el resultat -- si falla per qualsevol
+    motiu (API caiguda, etc.), NO trenca el guardat de la candidatura,
+    nomes es queda sense actualitzar la memoria aquest cop."""
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    existing_memory = profile.memory_text if profile else None
+
+    sections = payload.tailor_sections
+    resume_summary = "\n".join(
+        filter(None, [sections.professional_summary, sections.achievements, sections.professional_experience])
+    )
+
+    try:
+        updated_memory = update_user_memory(existing_memory, payload.jd_text, resume_summary)
+    except Exception as exc:  # noqa: BLE001 -- fire-and-forget, mai trenca el guardat principal
+        logger.warning("memory_update_failed reason=%s", str(exc))
+        return
+
+    if profile is None:
+        profile = UserProfile(user_id=current_user.id, memory_text=updated_memory)
+        db.add(profile)
+    else:
+        profile.memory_text = updated_memory
+    db.commit()
 
 
 @router.get("/profile", response_model=ProfileOut)
@@ -78,6 +108,13 @@ def create_application(
     db.add(application)
     db.commit()
     db.refresh(application)
+
+    # Actualitza la memoria evolutiva del perfil -- nomes te sentit si hi
+    # ha seccions retocades (si nomes es una anàlisi, no hi ha prou
+    # evidencia nova de com aquesta persona defensa les competencies).
+    if payload.tailor_sections is not None:
+        _update_memory_after_application(db, current_user, payload)
+
     return ApplicationSummary(
         id=application.id,
         title=application.title,

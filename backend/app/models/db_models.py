@@ -26,13 +26,20 @@ class User(Base):
 
 class UserProfile(Base):
     """CV base de l'usuari -- s'usa per defecte quan marca el checkbox
-    'Usa el meu CV base' en lloc d'enganxar-lo cada vegada."""
+    'Usa el meu CV base' en lloc d'enganxar-lo cada vegada.
+
+    memory_text: resum evolutiu de qui es aquesta persona (background,
+    competencies que pot defensar, patrons habituals). NO es un historial
+    en brut -- cada cop que es completa un Tailor, es RESCRIU aquest
+    resum (fusionant el que ja sabiem amb el que hem apres ara), no
+    s'hi afegeix text indefinidament."""
 
     __tablename__ = "user_profiles"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     base_cv_text = Column(Text, nullable=True)
+    memory_text = Column(Text, nullable=True)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="profile")
