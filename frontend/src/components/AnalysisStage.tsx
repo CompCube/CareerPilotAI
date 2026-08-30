@@ -46,7 +46,7 @@ export function AnalysisStage({
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="w-full">
       <div className="flex items-center justify-between gap-8">
         <h1 className="font-display text-4xl font-semibold text-paper">{t.analysis.heading}</h1>
 

@@ -74,12 +74,13 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
   const canReply = !tailorState.done && !isLoading
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-6xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.tailor.heading}</h1>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-3">
-        {/* --- Columna 1: xat, incrustat amb el seu propi scroll --- */}
-        <div className="flex max-h-[65vh] flex-col">
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {/* --- Esquerra: xat, ancorat a l'alçada de la pantalla, mai mes
+            -- scroll intern propi, la pagina no ha de fer scroll per ell --- */}
+        <div className="sticky top-6 flex max-h-[calc(100vh-3rem)] flex-col">
           <div
             ref={chatScrollRef}
             className="min-h-0 flex-1 space-y-4 overflow-y-auto rounded-lg border border-panel-border bg-ink/40 p-3"
@@ -161,8 +162,10 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
           )}
         </div>
 
-        {/* --- Columna 2: keywords, skills, ATS -- mateixa alçada que el xat --- */}
-        <div className="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
+        {/* --- Dreta: tot junt (keywords, skills, ATS, positioning,
+            seccions), sense limit d'alçada -- flueix amb la pagina
+            normal, nomes el xat de l'esquerra te alçada fixa --- */}
+        <div className="space-y-3">
           {tailorState.top_keywords.length > 0 && (
             <div className="rounded-lg border border-panel-border bg-panel p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
@@ -222,11 +225,7 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
               )}
             </div>
           )}
-        </div>
 
-        {/* --- Columna 3: positioning reframe + seccions del CV -- mateixa
-            alçada que les altres dues --- */}
-        <div className="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
           {tailorState.positioning_reframe && (
             <div className="rounded-lg border border-accent/40 bg-accent/10 p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
