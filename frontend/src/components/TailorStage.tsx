@@ -74,13 +74,12 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
   const canReply = !tailorState.done && !isLoading
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-7xl">
       <h1 className="font-display text-4xl font-semibold text-paper">{t.tailor.heading}</h1>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* --- Esquerra: xat, incrustat amb el seu propi scroll, ancorat
-            a la vista mentre la pagina fa scroll (sticky) --- */}
-        <div className="sticky top-6 flex max-h-[calc(100vh-3rem)] flex-col">
+      <div className="mt-6 grid gap-6 md:grid-cols-3">
+        {/* --- Columna 1: xat, incrustat amb el seu propi scroll --- */}
+        <div className="flex max-h-[65vh] flex-col">
           <div
             ref={chatScrollRef}
             className="min-h-0 flex-1 space-y-4 overflow-y-auto rounded-lg border border-panel-border bg-ink/40 p-3"
@@ -146,7 +145,7 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
             <button
               onClick={onSkipRemaining}
               disabled={isLoading}
-              className="mt-2 self-start font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-accent disabled:opacity-40"
+              className="mt-2 self-start shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-accent disabled:opacity-40"
             >
               {t.tailor.skipRemaining}
             </button>
@@ -162,9 +161,8 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
           )}
         </div>
 
-        {/* --- Dreta: panells fixes, flueixen amb la pagina normal (sense
-            scroll intern) --- */}
-        <div className="space-y-3">
+        {/* --- Columna 2: keywords, skills, ATS -- mateixa alçada que el xat --- */}
+        <div className="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
           {tailorState.top_keywords.length > 0 && (
             <div className="rounded-lg border border-panel-border bg-panel p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
@@ -224,7 +222,11 @@ export function TailorStage({ history, tailorState, onAnswer, onSkipRemaining, o
               )}
             </div>
           )}
+        </div>
 
+        {/* --- Columna 3: positioning reframe + seccions del CV -- mateixa
+            alçada que les altres dues --- */}
+        <div className="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
           {tailorState.positioning_reframe && (
             <div className="rounded-lg border border-accent/40 bg-accent/10 p-4">
               <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
