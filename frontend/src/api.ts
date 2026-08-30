@@ -175,7 +175,7 @@ async function authedFetch(path: string, token: string, options: RequestInit = {
   return response.json()
 }
 
-export type ProfileOut = { base_cv_text: string | null }
+export type ProfileOut = { base_cv_text: string | null; memory_text: string | null }
 export type ApplicationSummary = { id: number; title: string; applied: boolean; created_at: string }
 export type ApplicationDetail = ApplicationSummary & {
   jd_text: string
@@ -190,6 +190,10 @@ export function getProfile(token: string): Promise<ProfileOut> {
 
 export function updateProfile(token: string, baseCvText: string): Promise<ProfileOut> {
   return authedFetch('/profile', token, { method: 'PUT', body: JSON.stringify({ base_cv_text: baseCvText }) })
+}
+
+export function clearProfileMemory(token: string): Promise<ProfileOut> {
+  return authedFetch('/profile/memory', token, { method: 'DELETE' })
 }
 
 export function createApplication(

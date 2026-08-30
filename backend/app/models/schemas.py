@@ -229,6 +229,7 @@ class LoginResponse(BaseModel):
 
 class ProfileOut(BaseModel):
     base_cv_text: str | None = None
+    memory_text: str | None = None
 
 
 class ProfileUpdateRequest(BaseModel):

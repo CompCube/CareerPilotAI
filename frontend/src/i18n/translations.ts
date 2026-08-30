@@ -109,6 +109,9 @@ export interface Translations {
     noApplicationsYet: string
     useBaseCv: string
     useLastApplication: string
+    memoryLabel: string
+    memoryHint: string
+    clearMemory: string
     topSkillsLabel: string
     prepareInterviewForThis: string
     markAsApplied: string
@@ -237,6 +240,9 @@ export const translations: Record<Language, Translations> = {
       noApplicationsYet: "No applications saved yet -- they'll show up here once you finish tailoring one while signed in.",
       useBaseCv: 'Use my base resume',
       useLastApplication: 'Use my last application',
+      memoryLabel: 'What CareerPilot remembers about you',
+      memoryHint: 'Auto-generated after each tailored resume -- updates itself, never edited by hand.',
+      clearMemory: 'Clear',
       topSkillsLabel: 'Top skills they were looking for',
       prepareInterviewForThis: 'Prepare Interview for this application →',
       markAsApplied: 'Mark as applied',
@@ -378,6 +384,9 @@ export const translations: Record<Language, Translations> = {
       noApplicationsYet: 'Aún no tienes candidaturas guardadas -- aparecerán aquí cuando termines de retocar una estando conectado.',
       useBaseCv: 'Usar mi currículum base',
       useLastApplication: 'Usar mi última candidatura',
+      memoryLabel: 'Lo que CareerPilot recuerda de ti',
+      memoryHint: 'Se genera solo tras cada CV retocado -- se actualiza sola, no se edita a mano.',
+      clearMemory: 'Borrar',
       topSkillsLabel: 'Skills principales que buscaban',
       prepareInterviewForThis: 'Preparar entrevista para esta candidatura →',
       markAsApplied: 'Marcar como enviada',

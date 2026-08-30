@@ -55,7 +55,24 @@ def _update_memory_after_application(db: Session, current_user: User, payload: A
 @router.get("/profile", response_model=ProfileOut)
 def get_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> ProfileOut:
     profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
-    return ProfileOut(base_cv_text=profile.base_cv_text if profile else None)
+    return ProfileOut(
+        base_cv_text=profile.base_cv_text if profile else None,
+        memory_text=profile.memory_text if profile else None,
+    )
+
+
+@router.delete("/profile/memory", response_model=ProfileOut)
+def clear_profile_memory(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+) -> ProfileOut:
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    if profile is not None:
+        profile.memory_text = None
+        db.commit()
+    return ProfileOut(
+        base_cv_text=profile.base_cv_text if profile else None,
+        memory_text=None,
+    )
 
 
 @router.put("/profile", response_model=ProfileOut)

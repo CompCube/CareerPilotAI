@@ -31,6 +31,41 @@ def get_auth_header(google_id: str = "profile-test-user", email: str = "profile@
     return {"Authorization": f"Bearer {token}"}
 
 
+def test_memory_text_visible_via_profile_and_can_be_cleared():
+    headers = get_auth_header(google_id="memory-visibility-user", email="memvis@example.com")
+    mock_memory_response = '{"updated_memory": "Test memory content for visibility check."}'
+
+    empty = client.get("/profile", headers=headers)
+    assert empty.json()["memory_text"] is None
+
+    with patch("app.services.structured_output.call_llm", return_value=mock_memory_response):
+        client.post(
+            "/applications",
+            json={
+                "title": "Trigger memory",
+                "jd_text": "x",
+                "cv_text_used": "y",
+                "tailor_sections": {
+                    "title": "t", "subtitle": "s", "professional_summary": "s2",
+                    "skills": "sk", "achievements": "a", "professional_experience": "e",
+                    "achievements_label": "key_achievements",
+                },
+            },
+            headers=headers,
+        )
+
+    with_memory = client.get("/profile", headers=headers)
+    assert with_memory.json()["memory_text"] == "Test memory content for visibility check."
+
+    cleared = client.delete("/profile/memory", headers=headers)
+    assert cleared.status_code == 200
+    assert cleared.json()["memory_text"] is None
+
+    confirmed = client.get("/profile", headers=headers)
+    assert confirmed.json()["memory_text"] is None
+    print("OK  test_memory_text_visible_via_profile_and_can_be_cleared")
+
+
 def test_profile_starts_empty_then_can_be_updated():
     headers = get_auth_header()
 
@@ -230,6 +265,7 @@ def test_oldest_application_pruned_past_the_cap():
 
 
 if __name__ == "__main__":
+    test_memory_text_visible_via_profile_and_can_be_cleared()
     test_profile_starts_empty_then_can_be_updated()
     test_create_and_list_and_retrieve_application()
     test_cannot_access_another_users_application()

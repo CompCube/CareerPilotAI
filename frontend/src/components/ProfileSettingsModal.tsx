@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
-import { getProfile, updateProfile, extractPdfText, ApiError } from '../api'
+import { getProfile, updateProfile, clearProfileMemory, extractPdfText, ApiError } from '../api'
 
 function UploadIcon() {
   return (
@@ -27,6 +27,8 @@ export function ProfileSettingsModal({
 }) {
   const { t } = useLanguage()
   const [cvText, setCvText] = useState('')
+  const [memoryText, setMemoryText] = useState<string | null>(null)
+  const [isClearingMemory, setIsClearingMemory] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isExtracting, setIsExtracting] = useState(false)
@@ -36,10 +38,25 @@ export function ProfileSettingsModal({
 
   useEffect(() => {
     getProfile(token)
-      .then((p) => setCvText(p.base_cv_text || ''))
+      .then((p) => {
+        setCvText(p.base_cv_text || '')
+        setMemoryText(p.memory_text)
+      })
       .catch((err) => setError(err instanceof ApiError ? err.message : t.errors.generic))
       .finally(() => setIsLoading(false))
   }, [token, t.errors.generic])
+
+  async function handleClearMemory() {
+    setIsClearingMemory(true)
+    try {
+      await clearProfileMemory(token)
+      setMemoryText(null)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t.errors.generic)
+    } finally {
+      setIsClearingMemory(false)
+    }
+  }
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -117,6 +134,25 @@ export function ProfileSettingsModal({
             />
           )}
         </div>
+
+        {!isLoading && memoryText && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-xs uppercase tracking-wider text-accent">{t.auth.memoryLabel}</label>
+              <button
+                onClick={handleClearMemory}
+                disabled={isClearingMemory}
+                className="font-mono text-[10px] uppercase tracking-wider text-muted transition-colors hover:text-gap disabled:opacity-50"
+              >
+                {t.auth.clearMemory}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-muted">{t.auth.memoryHint}</p>
+            <p className="mt-2 whitespace-pre-line rounded-md border border-panel-border bg-ink p-4 text-sm leading-relaxed text-paper">
+              {memoryText}
+            </p>
+          </div>
+        )}
 
         {error && (
           <p className="mt-3 rounded-md border border-gap/40 bg-gap/10 px-4 py-2 text-sm text-gap">{error}</p>
