@@ -36,50 +36,57 @@ export function AnalysisStage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-lg border border-panel-border bg-panel p-4">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
-          {t.analysis.companyLabel}
-        </p>
-        <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
-          {analysis.company_profile}
-        </p>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-panel-border bg-panel p-4">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
-          {t.analysis.roleSummaryLabel}
-        </p>
-        <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
-          {analysis.role_summary}
-        </p>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-panel-border bg-panel p-4">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
-          {t.analysis.idealCandidateLabel}
-        </p>
-        <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
-          {analysis.ideal_candidate_profile}
-        </p>
-      </div>
-
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
-        {sorted.map((c) => (
-          <div
-            key={c.competency}
-            className="flex items-start justify-between gap-4 rounded-md border border-panel-border bg-panel px-4 py-3"
-          >
-            <div>
-              <p className="text-sm font-medium text-paper">{c.competency}</p>
-              <p className="mt-0.5 text-xs text-muted">{c.evidence}</p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider ${STATUS_COLOR[c.match_status]}`}
-            >
-              {STATUS_LABEL[c.match_status]}
-            </span>
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {/* --- Esquerra: els 3 panells de context --- */}
+        <div className="space-y-4">
+          <div className="rounded-lg border border-panel-border bg-panel p-4">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+              {t.analysis.companyLabel}
+            </p>
+            <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
+              {analysis.company_profile}
+            </p>
           </div>
-        ))}
+
+          <div className="rounded-lg border border-panel-border bg-panel p-4">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+              {t.analysis.roleSummaryLabel}
+            </p>
+            <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
+              {analysis.role_summary}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-panel-border bg-panel p-4">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
+              {t.analysis.idealCandidateLabel}
+            </p>
+            <p className="mt-2 text-justify text-sm leading-relaxed text-paper">
+              {analysis.ideal_candidate_profile}
+            </p>
+          </div>
+        </div>
+
+        {/* --- Dreta: tots els requirements, amb el seu propi scroll si
+            n'hi ha molts (evita que l'esquerra quedi molt mes curta) --- */}
+        <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
+          {sorted.map((c) => (
+            <div
+              key={c.competency}
+              className="flex items-start justify-between gap-4 rounded-md border border-panel-border bg-panel px-4 py-3"
+            >
+              <div>
+                <p className="text-sm font-medium text-paper">{c.competency}</p>
+                <p className="mt-0.5 text-xs text-muted">{c.evidence}</p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider ${STATUS_COLOR[c.match_status]}`}
+              >
+                {STATUS_LABEL[c.match_status]}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="mt-8 flex justify-center">
