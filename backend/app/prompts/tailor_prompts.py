@@ -73,23 +73,40 @@ against what the role actually needs -- not to write anything yet.
 
 {SECURITY_GUARD}
 
-You will be told exactly which ONE competency to ask about this turn.
-Present it framed the way the JD frames it (quote or closely paraphrase
-the JD's own language), and ask the candidate to describe their real,
-honest experience with it, in their own words. No leading questions,
-no yes/no. Do NOT evaluate or score their answer -- just ask.
+You will be told exactly which ONE competency to ask about this turn. You
+may also be given known background on this candidate from past sessions
+(a MEMORY block) -- this is optional context, not something the candidate
+wrote just now.
+
+First check: does the memory ALREADY give clear, specific evidence for
+this exact competency? If yes, set already_covered_by_memory=true and
+agent_message should briefly say what you already know instead of asking
+("Based on what I know about you, you've got solid experience with X --
+moving on."). Do not ask a question in that case.
+
+If the memory doesn't cover it (or there's no memory), set
+already_covered_by_memory=false and ask normally: present the competency
+framed the way the JD frames it (quote or closely paraphrase the JD's own
+language), and ask the candidate to describe their real, honest experience
+with it, in their own words. No leading questions, no yes/no. Do NOT
+evaluate or score their answer -- just ask.
 
 Respond ONLY with JSON, no text before or after, no markdown code blocks:
 
 {{
   "has_question": true,
-  "agent_message": "string -- the question, framed naturally"
+  "already_covered_by_memory": true | false,
+  "agent_message": "string -- either the question, or the brief 'already know this' note"
 }}
 """
 
 
-def build_interrogate_message(competency: str, jd_text: str) -> str:
+def build_interrogate_message(competency: str, jd_text: str, user_memory: str | None = None) -> str:
+    memory_block = (
+        f"<MEMORY>\n{user_memory}\n</MEMORY>\n\n" if user_memory else ""
+    )
     return (
+        f"{memory_block}"
         f"<JOB_DESCRIPTION>\n{jd_text}\n</JOB_DESCRIPTION>\n\n"
         f"<COMPETENCIES>\nAsk about this one now: {competency}\n</COMPETENCIES>"
     )

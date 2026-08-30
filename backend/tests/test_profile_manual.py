@@ -23,8 +23,9 @@ client = TestClient(app.main.app)
 FAKE_GOOGLE_PAYLOAD = {"sub": "profile-test-user", "email": "profile@example.com", "name": "Test User"}
 
 
-def get_auth_header() -> dict:
-    with patch("app.api.auth_routes.verify_google_id_token", return_value=FAKE_GOOGLE_PAYLOAD):
+def get_auth_header(google_id: str = "profile-test-user", email: str = "profile@example.com") -> dict:
+    payload = {"sub": google_id, "email": email, "name": "Test User"}
+    with patch("app.api.auth_routes.verify_google_id_token", return_value=payload):
         response = client.post("/auth/google", json={"google_id_token": "fake-token"})
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -144,10 +145,69 @@ def test_toggle_applied():
     print("OK  test_toggle_applied")
 
 
+def test_saving_application_with_sections_updates_profile_memory():
+    """Nomes quan hi ha seccions retocades de veritat (no nomes una
+    analisi) s'ha d'actualitzar la memoria evolutiva del perfil."""
+    headers = get_auth_header()
+    mock_memory_response = '{"updated_memory": "Strong FastAPI and Python background, verified via real session."}'
+
+    with patch("app.services.structured_output.call_llm", return_value=mock_memory_response):
+        created = client.post(
+            "/applications",
+            json={
+                "title": "With sections",
+                "jd_text": "Python role",
+                "cv_text_used": "CV text",
+                "tailor_sections": {
+                    "title": "t", "subtitle": "s", "professional_summary": "Built FastAPI services.",
+                    "skills": "sk", "achievements": "a", "professional_experience": "e",
+                    "achievements_label": "key_achievements",
+                },
+            },
+            headers=headers,
+        )
+    assert created.status_code == 200, created.text
+
+    profile = client.get("/profile", headers=headers)
+    # Nota: /profile nomes exposa base_cv_text, no memory_text -- consultem
+    # la DB directament per confirmar que de veritat s'ha desat.
+    assert profile.status_code == 200
+
+    from app.core.database import SessionLocal
+    from app.models.db_models import User, UserProfile
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.email == "profile@example.com").first()
+        stored_profile = db.query(UserProfile).filter(UserProfile.user_id == user.id).first()
+        assert stored_profile is not None
+        assert "FastAPI" in stored_profile.memory_text
+    finally:
+        db.close()
+    print("OK  test_saving_application_with_sections_updates_profile_memory")
+
+
+def test_saving_application_without_sections_does_not_touch_memory():
+    """Una candidatura nomes analitzada (sense Tailor) no dona prou
+    evidencia de com defensa competencies -- no s'ha de tocar la memoria."""
+    headers = get_auth_header()
+    with patch("app.services.structured_output.call_llm") as mock_call:
+        created = client.post(
+            "/applications",
+            json={"title": "Analysis only", "jd_text": "x", "cv_text_used": "y"},
+            headers=headers,
+        )
+        assert created.status_code == 200
+        mock_call.assert_not_called()
+    print("OK  test_saving_application_without_sections_does_not_touch_memory")
+
+
 def test_oldest_application_pruned_past_the_cap():
     import app.api.profile_routes as profile_routes
 
-    headers = get_auth_header()
+    # Usuari propi i aillat -- aquest test necessita comptar des de zero,
+    # no pot compartir l'usuari amb la resta de tests d'aquest fitxer.
+    headers = get_auth_header(google_id="pruning-test-user", email="pruning@example.com")
     original_cap = profile_routes.MAX_APPLICATIONS_PER_USER
     profile_routes.MAX_APPLICATIONS_PER_USER = 3  # cap petit per no crear 20 files de veritat
     try:
@@ -176,6 +236,8 @@ if __name__ == "__main__":
     test_profile_and_applications_require_auth()
     test_delete_application()
     test_toggle_applied()
+    test_saving_application_with_sections_updates_profile_memory()
+    test_saving_application_without_sections_does_not_touch_memory()
     test_oldest_application_pruned_past_the_cap()
     print("\nAll profile/applications tests passed.")
     os.remove("test_profile.db")

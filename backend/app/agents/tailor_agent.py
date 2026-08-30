@@ -61,6 +61,7 @@ class _TailorState:
     jd_text: str
     competencies: list[CompetencyMatch]
     language: str = "en"
+    user_memory: str | None = None
     phase: TailorPhase = "extract"
     requirement_idx: int = 0
     deepen_count: int = 0
@@ -104,6 +105,7 @@ def start_tailor_session(
     analysis: AnalyzeResponse | None = None,
     language: str = "en",
     fast: bool = False,
+    user_memory: str | None = None,
 ) -> TailorResponse:
     session_id = session_store.create_session()
     sorted_competencies = (
@@ -115,7 +117,8 @@ def start_tailor_session(
             "(Interrogate phase needs a list to walk through)."
         )
     state = _TailorState(
-        cv_text=cv_text, jd_text=jd_text, competencies=sorted_competencies, language=language
+        cv_text=cv_text, jd_text=jd_text, competencies=sorted_competencies, language=language,
+        user_memory=user_memory,
     )
     _tailor_states[session_id] = state
 
@@ -150,10 +153,15 @@ def start_tailor_session(
 # ---------------------------------------------------------------------------
 
 
-def _ask_next_requirement(session_id: str, state: _TailorState) -> TailorResponse:
+def _ask_next_requirement(
+    session_id: str, state: _TailorState, _skipped_notes: list[str] | None = None
+) -> TailorResponse:
+    skipped_notes = _skipped_notes or []
     competency = state.competencies[state.requirement_idx]
     session_store.append_message(
-        session_id, "user", build_interrogate_message(competency.competency, state.jd_text)
+        session_id,
+        "user",
+        build_interrogate_message(competency.competency, state.jd_text, state.user_memory),
     )
     result, raw = call_llm_structured(
         system_prompt=TAILOR_INTERROGATE_PROMPT + language_instruction(state.language),
@@ -163,7 +171,24 @@ def _ask_next_requirement(session_id: str, state: _TailorState) -> TailorRespons
         max_tokens=400,
     )
     session_store.append_message(session_id, "assistant", raw)
-    return _build_response(state, session_id, agent_message=result.agent_message)
+
+    if result.already_covered_by_memory:
+        # La memoria ja dona prou evidencia -- avancem sols, sense esperar
+        # cap resposta de l'usuari. Acumulem el missatge perque no es perdi
+        # (l'usuari ha de saber que alguna cosa s'ha saltat i per que),
+        # i encadenem cap a la seguent competencia (o Deepen si era l'ultima).
+        skipped_notes = skipped_notes + [result.agent_message]
+        state.requirement_idx += 1
+        if state.requirement_idx < len(state.competencies):
+            return _ask_next_requirement(session_id, state, skipped_notes)
+        state.phase = "deepen"
+        state.deepen_count = 0
+        deepen_response = _ask_deepen(session_id, state)
+        combined_message = "\n\n".join(skipped_notes + [deepen_response.agent_message])
+        return deepen_response.model_copy(update={"agent_message": combined_message})
+
+    final_message = "\n\n".join(skipped_notes + [result.agent_message]) if skipped_notes else result.agent_message
+    return _build_response(state, session_id, agent_message=final_message)
 
 
 # ---------------------------------------------------------------------------

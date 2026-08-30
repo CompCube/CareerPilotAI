@@ -22,6 +22,7 @@ EXTRACT_RESPONSE = """{
 }"""
 
 QUESTION_RESPONSE = '{"has_question": true, "is_clarification": false, "agent_message": "Tell me about your experience with X."}'
+MEMORY_COVERED_RESPONSE = lambda note: f'{{"has_question": true, "already_covered_by_memory": true, "agent_message": "{note}"}}'
 NOT_A_CLARIFICATION = '{"is_clarification": false, "agent_message": ""}'
 IS_A_CLARIFICATION = '{"is_clarification": true, "agent_message": "By that I mean hands-on shipping experience. So -- do you have that?"}'
 NO_MORE_DEEPEN_RESPONSE = '{"has_question": false, "is_clarification": false, "agent_message": ""}'
@@ -214,6 +215,35 @@ def test_non_fast_mode_without_analysis_raises_clean_error():
     print("OK  test_non_fast_mode_without_analysis_raises_clean_error")
 
 
+def test_memory_covered_competency_auto_skips_and_preserves_message():
+    """Si la memoria ja cobreix una competencia, l'Interrogate l'ha de
+    saltar SOLA (sense esperar resposta de l'usuari), i el missatge
+    ('ja ho se de tu') no s'ha de perdre -- ha d'arribar combinat amb
+    la seguent pregunta real."""
+    analysis = make_analysis(n_competencies=2)
+
+    call_sequence = [
+        EXTRACT_RESPONSE,
+        MEMORY_COVERED_RESPONSE("Based on what I know about you, Skill 0 is solid."),  # competency 0: saltada
+        QUESTION_RESPONSE,  # competency 1: pregunta real
+    ]
+
+    with patch("app.services.structured_output.call_llm", side_effect=call_sequence) as mock_call:
+        result = start_tailor_session(
+            cv_text="CV " * 10, jd_text="JD " * 10, analysis=analysis, user_memory="Knows Skill 0 well."
+        )
+        assert result.phase == "interrogate"
+        # El missatge combinat ha de contenir TOTES DUES coses -- la nota
+        # de la competencia saltada I la pregunta real seguent.
+        assert "Skill 0 is solid" in result.agent_message
+        assert "Tell me about your experience" in result.agent_message
+        # Nomes 3 crides (extract + 2 interrogate) -- l'usuari mai ha
+        # respost res, i tot i aixi ja hem avançat a competency 1.
+        assert mock_call.call_count == 3
+
+    print("OK  test_memory_covered_competency_auto_skips_and_preserves_message")
+
+
 def test_skip_remaining_jumps_straight_to_assemble_no_clarification_call():
     """El boto 'Skip remaining questions' -- no ha de passar per la
     comprovacio d'aclariment, ha de saltar directe, sense cap crida extra."""
@@ -251,4 +281,5 @@ if __name__ == "__main__":
     test_fast_mode_skips_interrogate_and_deepen_entirely()
     test_non_fast_mode_without_analysis_raises_clean_error()
     test_skip_remaining_jumps_straight_to_assemble_no_clarification_call()
+    test_memory_covered_competency_auto_skips_and_preserves_message()
     print("\nAll Tailor v2 tests passed.")

@@ -117,6 +117,10 @@ class TailorQuestionOutput(BaseModel):
         default=False,
         description="True si el darrer missatge de l'usuari era un dubte/pregunta, no una resposta real",
     )
+    already_covered_by_memory: bool = Field(
+        default=False,
+        description="True si la memoria del perfil ja dona prou evidencia d'aquesta competencia -- salta-la sense preguntar",
+    )
     agent_message: str = Field(default="")
 
 

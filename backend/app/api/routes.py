@@ -6,13 +6,17 @@ corresponent, retorna la resposta). Cap logica de negoci aqui --
 aixo viu a app/agents/.
 """
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from sqlalchemy.orm import Session
 
 from app.agents.analyzer_agent import run_analyzer
 from app.agents.interview_agent import InterviewFinishedError, continue_interview, start_interview
 from app.agents.tailor_agent import continue_tailor_session, start_tailor_session
 from app.core.config import get_settings
+from app.core.database import get_db
 from app.core.limiter import limiter
+from app.core.security import get_current_user_optional
+from app.models.db_models import User, UserProfile
 from app.models.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
@@ -74,7 +78,12 @@ async def analyze(request: Request, payload: AnalyzeRequest) -> AnalyzeResponse:
 
 @router.post("/tailor", response_model=TailorResponse)
 @limiter.limit(f"{settings.rate_limit_per_minute}/minute")
-async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
+async def tailor(
+    request: Request,
+    payload: TailorRequest,
+    current_user: User | None = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
+) -> TailorResponse:
     """
     Conversacional, 4 fases (extract -> interrogate -> deepen -> assemble).
     Omet session_id per iniciar (cv_text i jd_text sempre obligatoris;
@@ -93,9 +102,13 @@ async def tailor(request: Request, payload: TailorRequest) -> TailorResponse:
                     status_code=400,
                     detail="analysis is required to start a new Tailor session unless fast=true.",
                 )
+            user_memory = None
+            if current_user is not None:
+                profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+                user_memory = profile.memory_text if profile else None
             return start_tailor_session(
                 cv_text=payload.cv_text, jd_text=payload.jd_text, analysis=payload.analysis,
-                language=payload.language, fast=payload.fast,
+                language=payload.language, fast=payload.fast, user_memory=user_memory,
             )
 
         if not payload.user_message and not payload.skip_remaining:

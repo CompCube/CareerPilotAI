@@ -205,7 +205,7 @@ function App() {
       setJdText(jd)
       // Salta /analyze del tot -- el camp rapid del Tailor no el necessita
       // (Extract fa la seva propia extraccio de keywords/ATS, independent).
-      const result = await startTailor(cv, jd, null, lang, true)
+      const result = await startTailor(cv, jd, null, lang, true, authToken)
       setTailorState(result)
       setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
       // El cami rapid normalment acaba fet d'un sol cop (done=true) -- si es
@@ -226,7 +226,7 @@ function App() {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await startTailor(cvText, jdText, analysis, lang)
+      const result = await startTailor(cvText, jdText, analysis, lang, false, authToken)
       setTailorState(result)
       setTailorHistory([{ agentMessage: result.agent_message, userReply: null }])
       setStage('tailor')

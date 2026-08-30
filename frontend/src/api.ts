@@ -13,10 +13,12 @@ export class ApiError extends Error {
   }
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
+async function post<T>(path: string, body: unknown, token?: string | null): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (token) headers.Authorization = `Bearer ${token}`
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   })
 
@@ -113,8 +115,9 @@ export function startTailor(
   analysis: AnalyzeResponse | null,
   lang: string,
   fast: boolean = false,
+  token?: string | null,
 ): Promise<TailorResponse> {
-  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis, language: lang, fast })
+  return post('/tailor', { cv_text: cvText, jd_text: jdText, analysis, language: lang, fast }, token)
 }
 
 export function continueTailor(
