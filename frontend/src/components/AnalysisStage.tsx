@@ -22,6 +22,28 @@ export function AnalysisStage({
   }
 
   const sorted = [...analysis.competencies].sort((a, b) => a.priority - b.priority)
+  const half = Math.ceil(sorted.length / 2)
+  const firstHalf = sorted.slice(0, half)
+  const secondHalf = sorted.slice(half)
+
+  function RequirementCard({ c }: { c: (typeof sorted)[number] }) {
+    return (
+      <div
+        key={c.competency}
+        className="flex items-start justify-between gap-4 rounded-md border border-panel-border bg-panel px-4 py-3"
+      >
+        <div>
+          <p className="text-sm font-medium text-paper">{c.competency}</p>
+          <p className="mt-0.5 text-xs text-muted">{c.evidence}</p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider ${STATUS_COLOR[c.match_status]}`}
+        >
+          {STATUS_LABEL[c.match_status]}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -36,8 +58,8 @@ export function AnalysisStage({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* --- Esquerra: els 3 panells de context --- */}
+      <div className="mt-6 grid gap-6 md:grid-cols-3">
+        {/* --- Columna 1: els 3 panells de context --- */}
         <div className="max-h-[55vh] space-y-4 overflow-y-auto pr-1">
           <div className="rounded-lg border border-panel-border bg-panel p-4">
             <p className="font-mono text-[10px] uppercase tracking-wider text-accent">
@@ -67,24 +89,16 @@ export function AnalysisStage({
           </div>
         </div>
 
-        {/* --- Dreta: tots els requirements, amb el seu propi scroll si
-            n'hi ha molts (evita que l'esquerra quedi molt mes curta) --- */}
+        {/* --- Columnes 2 i 3: els requirements repartits en dues meitats,
+            mateixa alçada que la columna 1 --- */}
         <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
-          {sorted.map((c) => (
-            <div
-              key={c.competency}
-              className="flex items-start justify-between gap-4 rounded-md border border-panel-border bg-panel px-4 py-3"
-            >
-              <div>
-                <p className="text-sm font-medium text-paper">{c.competency}</p>
-                <p className="mt-0.5 text-xs text-muted">{c.evidence}</p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider ${STATUS_COLOR[c.match_status]}`}
-              >
-                {STATUS_LABEL[c.match_status]}
-              </span>
-            </div>
+          {firstHalf.map((c) => (
+            <RequirementCard key={c.competency} c={c} />
+          ))}
+        </div>
+        <div className="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
+          {secondHalf.map((c) => (
+            <RequirementCard key={c.competency} c={c} />
           ))}
         </div>
       </div>
